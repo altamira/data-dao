@@ -125,6 +125,9 @@ public class BOMDao extends BaseDao<BOM> {
             bom.getItems().size();
             bom.getItems().stream().forEach((item) -> {
                 item.getParts().size();
+                item.getParts().stream().forEach((part) -> {
+                    
+                });
             });
         }
 

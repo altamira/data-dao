@@ -17,7 +17,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class ProduceDao extends BaseDao<Produce> {
 
-    public ProduceDao() {
-        this.type = Produce.class;
-    }
 }

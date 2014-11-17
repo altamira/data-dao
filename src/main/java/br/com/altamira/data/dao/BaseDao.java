@@ -6,7 +6,6 @@
 package br.com.altamira.data.dao;
 
 import static br.com.altamira.data.dao.Dao.PAGE_SIZE_VALIDATION;
-import static br.com.altamira.data.dao.Dao.SEARCH_VALIDATION;
 import static br.com.altamira.data.dao.Dao.START_PAGE_VALIDATION;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
@@ -27,7 +26,7 @@ import javax.validation.ValidationException;
 import javax.validation.Validator;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  *
@@ -54,110 +53,47 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     @Inject
     protected Validator validator;
 
-    /**
-     *
-     */
-    protected Class<T> type;
-    
     public void lazyLoad(T entity) {
-        
+
     }
-    
-    public void resolveDependencies(T entity) {
-        
+
+    public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
+
     }
-    
-    public CriteriaQuery<T> getCriteriaQuery(long parentId) {
+
+    public CriteriaQuery<T> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> criteriaQuery = cb.createQuery(type);
-        
-        Root<T> entity = criteriaQuery.from(type);
+        CriteriaQuery<T> criteriaQuery = cb.createQuery(getTypeClass());
+
+        Root<T> entity = criteriaQuery.from(getTypeClass());
 
         criteriaQuery.select(entity);
         
         criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
-        
+
         return criteriaQuery;
     }
-    
+
     /**
      *
+     * @param parameters
      * @param startPage
      * @param pageSize
      * @return
      */
     @Override
     public List<T> list(
+            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
             @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
             @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException {
 
-        CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(0l);
+        CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(parameters);
 
         return entityManager.createQuery(criteriaQuery)
                 .setFirstResult(startPage * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();
-    }
-    
-    /**
-     *
-     * @param parentId
-     * @param startPage
-     * @param pageSize
-     * @return
-     */
-    @Override
-    public List<T> list(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
-            throws ConstraintViolationException {
-
-        CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(parentId);
-
-        return entityManager.createQuery(criteriaQuery)
-                .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize)
-                .getResultList();
-    }
-    
-    /**
-     *
-     * @param search
-     * @param startPage
-     * @param pageSize
-     * @return
-     * @throws ConstraintViolationException
-     */
-    @Override
-    public List<T> search(
-            @NotNull @Size(min = 2, message = SEARCH_VALIDATION) String search,
-            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
-            throws ConstraintViolationException, NoResultException {
-
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> q = cb.createQuery(type);
-        Root<T> entity = q.from(type);
-
-        String searchCriteria = "%" + search.toLowerCase().trim() + "%";
-
-        // TODO: get fields from Entity<T>
-        /*q.select(cb.construct(type, entity.get("number"),
-         entity.get("customer"),
-         entity.get("checked")));*/
-        // TODO: pass criteria query as parameter
-        /*q.where(cb.or(
-         cb.like(cb.lower(entity.get("number").as(String.class)), searchCriteria),
-         cb.like(cb.lower(entity.get("customer")), searchCriteria)));*/
-        log.log(Level.INFO, "Searching for {0}...", searchCriteria);
-
-        return entityManager.createQuery(q)
-                .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize)
-                .getResultList();
-
     }
 
     /**
@@ -167,22 +103,22 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      */
     @Override
     public T find(
-            @Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id)
+            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, NoResultException {
 
         // Return Entity Model
         if (id == 0) {
             try {
-                return type.newInstance();
+                return getTypeClass().newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(BaseDao.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-        T entity = entityManager.find(type, id);
+
+        T entity = entityManager.find(getTypeClass(), id);
 
         this.lazyLoad(entity);
-        
+
         return entity;
     }
 
@@ -193,61 +129,39 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      */
     @Override
     public T create(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
+            @NotNull(message = ENTITY_VALIDATION) T entity,
+            /*@NotNull(message = PARAMETER_VALIDATION)*/ MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException {
 
         if (entity.getId() != null && entity.getId() > 0) {
             throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
         }
 
-        entity.setId(null);
+        if (parameters.get("parentId") != null) {
+            Object parent = entityManager.find(
+                    entity.getParentType(),
+                    Long.parseLong(parameters.get("parentId").get(0)));
 
-        validate(entity);
-
-        this.resolveDependencies(entity);
-        
-        entityManager.persist(entity);
-        entityManager.flush();
-
-        // Reload to update child references
-        return find(entity.getId());
-    }
-
-    
-    /**
-     *
-     * @param entity
-     * @return
-     */
-    @Override
-    public T create(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException {
-
-        if (entity.getId() != null && entity.getId() > 0) {
-            throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
+            entity.setParent((br.com.altamira.data.model.Entity) parent);
         }
-        
-        Object parent = entityManager.find(
-                entity.getParentType(), 
-                parentId);
-        
-        entity.setParent((br.com.altamira.data.model.Entity)parent);
-        
+
         entity.setId(null);
 
         validate(entity);
 
-        this.resolveDependencies(entity);
-        
+        this.resolveDependencies(entity, parameters);
+
         entityManager.persist(entity);
         entityManager.flush();
 
+        entity = entityManager.find(getTypeClass(), entity.getId());
+
+        this.lazyLoad(entity);
+
         // Reload to update child references
-        return find(entity.getId());
+        return entity;
     }
-    
+
     /**
      *
      * @param entity
@@ -255,71 +169,36 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      */
     @Override
     public T update(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
+            @NotNull(message = ENTITY_VALIDATION) T entity,
+            MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
         if (entity.getId() == null || entity.getId() == 0l) {
             throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
         }
 
+        if (parameters != null &&
+                parameters.get("parentId") != null) {
+            Object parent = entityManager.find(
+                    entity.getParentType(),
+                    Long.parseLong(parameters.get("parentId").get(0)));
+
+            entity.setParent((br.com.altamira.data.model.Entity) parent);
+        }
+
         validate(entity);
 
-        this.resolveDependencies(entity);
-        
+        this.resolveDependencies(entity, parameters);
+
         entity = entityManager.merge(entity);
         entityManager.flush();
 
-        // Reload to update child references
-        return find(entity.getId());
-    }
-    
-    /**
-     *
-     * @param entity
-     * @return
-     */
-    @Override
-    public T update(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException, IllegalArgumentException {
+        entity = entityManager.find(getTypeClass(), entity.getId());
 
-        if (entity.getId() == null || entity.getId() == 0l) {
-            throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
-        }
-
-        Object parent = entityManager.find(
-                entity.getParentType(), 
-                parentId);
-        
-        entity.setParent((br.com.altamira.data.model.Entity)parent);
-        
-        validate(entity);
-
-        this.resolveDependencies(entity);
-        
-        entity = entityManager.merge(entity);
-        entityManager.flush();
+        this.lazyLoad(entity);
 
         // Reload to update child references
-        return find(entity.getId());
-    }
-    
-    /**
-     *
-     * @param entity
-     */
-    @Override
-    public void remove(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException, IllegalArgumentException {
-
-        if (entity.getId() == null || entity.getId() <= 0) {
-            throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
-        }
-
-        entity = entityManager.contains(entity) ? entity : entityManager.merge(entity);
-        entityManager.remove(entity);
+        return entity;
     }
 
     /**
@@ -329,11 +208,18 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     @Override
     public void remove(
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
-            throws ConstraintViolationException, NoResultException {
+            throws ConstraintViolationException, IllegalArgumentException {
 
-        remove(find(id));
+        T entity = entityManager.find(getTypeClass(), id);
+
+        if (entity.getId() == null || entity.getId() <= 0) {
+            throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
+        }
+
+        entity = entityManager.contains(entity) ? entity : entityManager.merge(entity);
+        entityManager.remove(entity);
     }
-    
+
     /**
      * <p>
      * Validates the given Member variable and throws validation exceptions

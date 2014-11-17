@@ -10,7 +10,7 @@ import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  *
@@ -38,6 +38,11 @@ public interface Dao<T extends br.com.altamira.data.model.Entity> {
      *
      */
     public static final String ENTITY_VALIDATION = "Entity can't be null.";
+    
+    /**
+     *
+     */
+    public static final String PARAMETER_VALIDATION = "Parameters can't be null.";
 
     /**
      *
@@ -56,43 +61,17 @@ public interface Dao<T extends br.com.altamira.data.model.Entity> {
 
     /**
      *
+     * @param parameters
      * @param startPage
      * @param pageSize
      * @return
      * @throws ConstraintViolationException
      */
     public List<T> list(
+            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
             @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
             @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException;
-
-    /**
-     *
-     * @param parentId
-     * @param startPage
-     * @param pageSize
-     * @return
-     * @throws ConstraintViolationException
-     */
-    public List<T> list(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
-            throws ConstraintViolationException;
-    
-    /**
-     *
-     * @param search
-     * @param startPage
-     * @param pageSize
-     * @return
-     * @throws ConstraintViolationException
-     */
-    public List<T> search(
-            @NotNull @Size(min = 2, message = SEARCH_VALIDATION) String search,
-            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
-            throws ConstraintViolationException, NoResultException;
 
     /**
      *
@@ -102,74 +81,42 @@ public interface Dao<T extends br.com.altamira.data.model.Entity> {
      * @throws NoResultException
      */
     public T find(
-            @Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id)
+            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, NoResultException;
 
     /**
      *
+     * @param parameters
      * @param entity
      * @return
      * @throws ConstraintViolationException
      */
     public T create(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
+            @NotNull(message = ENTITY_VALIDATION) T entity,
+            /*@NotNull(message = PARAMETER_VALIDATION)*/ MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException;
-    
-    /**
-     *
-     * @param parentId
-     * @param entity
-     * @return
-     * @throws ConstraintViolationException
-     */
-    public T create(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException;
-    
-    /**
-     *
-     * @param entity
-     * @return
-     * @throws ConstraintViolationException
-     * @throws IllegalArgumentException
-     */
-    public T update(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException, IllegalArgumentException;
-
         
     /**
      *
-     * @param parentId
+     * @param parameters
      * @param entity
      * @return
      * @throws ConstraintViolationException
      * @throws IllegalArgumentException
      */
     public T update(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long parentId,
-            @NotNull(message = ENTITY_VALIDATION) T entity)
+            @NotNull(message = ENTITY_VALIDATION) T entity,
+            /*@NotNull(message = PARAMETER_VALIDATION)*/ MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException;
     
-    /**
-     *
-     * @param entity
-     * @throws ConstraintViolationException
-     * @throws IllegalArgumentException
-     */
-    public void remove(
-            @NotNull(message = ENTITY_VALIDATION) T entity)
-            throws ConstraintViolationException, IllegalArgumentException;
-
     /**
      *
      * @param id
      * @throws ConstraintViolationException
-     * @throws NoResultException
+     * @throws IllegalArgumentException
      */
     public void remove(
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
-            throws ConstraintViolationException, NoResultException;
+            throws ConstraintViolationException, IllegalArgumentException;
 
 }

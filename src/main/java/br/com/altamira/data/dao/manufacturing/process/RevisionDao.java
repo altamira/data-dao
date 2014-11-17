@@ -15,9 +15,5 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class RevisionDao  extends BaseDao<Revision> {
-
-    public RevisionDao() {
-        this.type = Revision.class;
-    }
     
 }

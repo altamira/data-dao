@@ -13,7 +13,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class UseDao extends BaseDao<Use> {
 
-    public UseDao() {
-        this.type = Use.class;
-    }
 }

@@ -12,8 +12,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class OrderItemDao extends BaseDao<OrderItem> {
 
-    public OrderItemDao() {
-        this.type = OrderItem.class;
-    }
-
 }

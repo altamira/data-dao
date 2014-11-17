@@ -16,8 +16,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class SalesOrderDao extends BaseDao<Order> {
 
-    public SalesOrderDao() {
-        this.type = Order.class;
-    }
-
 }

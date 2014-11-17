@@ -16,7 +16,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class SketchDao extends BaseDao<Sketch> {
 
-    public SketchDao() {
-        this.type = Sketch.class;
-    }
 }

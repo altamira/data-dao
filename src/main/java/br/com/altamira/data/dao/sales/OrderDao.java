@@ -13,8 +13,4 @@ import br.com.altamira.data.model.sales.Order;
 @Stateless
 public class OrderDao extends BaseDao<Order> {
 
-    public OrderDao() {
-        this.type = Order.class;
-    }
-
 }

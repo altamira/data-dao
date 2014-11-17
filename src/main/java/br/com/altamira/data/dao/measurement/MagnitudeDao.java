@@ -16,7 +16,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class MagnitudeDao extends BaseDao<Magnitude> {
 
-    public MagnitudeDao() {
-        this.type = Magnitude.class;
-    }
 }

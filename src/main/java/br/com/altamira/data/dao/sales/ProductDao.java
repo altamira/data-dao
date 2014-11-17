@@ -13,11 +13,4 @@ import br.com.altamira.data.model.sales.Product;
 @Stateless
 public class ProductDao extends BaseDao<Product> {
 
-    public ProductDao() {
-        this.type = Product.class;
-    }
-
-    public Product find(String code) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
 }

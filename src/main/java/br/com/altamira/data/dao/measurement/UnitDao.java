@@ -16,7 +16,4 @@ import javax.ejb.Stateless;
 @Stateless
 public class UnitDao extends BaseDao<Unit> {
 
-    public UnitDao() {
-        this.type = Unit.class;
-    }
 }

@@ -62,7 +62,7 @@ public class BOMDao extends BaseDao<BOM> {
                 entity.get("customer"),
                 entity.get("checked")));
 
-        // list unchecked
+        // filter by checked/unchecked
         if (parameters.get("checked") != null && 
                 !parameters.get("checked").isEmpty()) {
             boolean checked = Boolean.parseBoolean(parameters.get("checked").get(0));

@@ -85,14 +85,14 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     public List<T> list(
             @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
             @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 1, message = PAGE_SIZE_VALIDATION) int pageSize)
+            @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException {
 
         CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(parameters);
 
         return entityManager.createQuery(criteriaQuery)
                 .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize)
+                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
     }
 

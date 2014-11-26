@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Local;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author Alessandro
  * @param <T>
  */
+
 public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> implements Dao<T> {
 
     /**
@@ -103,7 +105,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      */
     @Override
     public T find(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
+            @Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, NoResultException {
 
         // Return Entity Model
@@ -137,11 +139,11 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
             throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
         }
 
-        if (parameters.get("parentId") != null) {
+        if (parameters.get("parentId") != null && !parameters.get("parentId").isEmpty()) {
             Object parent = entityManager.find(
                     entity.getParentType(),
                     Long.parseLong(parameters.get("parentId").get(0)));
-
+            
             entity.setParent((br.com.altamira.data.model.Entity) parent);
         }
 

@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao;
 
 import java.util.List;
+import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author Alessandro
  * @param <T>
  */
+
 public interface Dao<T extends br.com.altamira.data.model.Entity> {
 
     /**
@@ -81,7 +83,7 @@ public interface Dao<T extends br.com.altamira.data.model.Entity> {
      * @throws NoResultException
      */
     public T find(
-            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
+            @Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, NoResultException;
 
     /**

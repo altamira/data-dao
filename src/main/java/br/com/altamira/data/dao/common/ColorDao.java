@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao.common;
 
 import br.com.altamira.data.dao.BaseDao;
+import javax.ejb.Local;
 import javax.ejb.Stateless;
 
 /**

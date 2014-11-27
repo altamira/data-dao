@@ -6,7 +6,6 @@
 package br.com.altamira.data.dao;
 
 import java.util.List;
-import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;

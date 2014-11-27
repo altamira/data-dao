@@ -14,6 +14,6 @@ import javax.ejb.Stateless;
  * @author Alessandro
  */
 @Stateless
-public class RevisionDao  extends BaseDao<Revision> {
+public class RevisionDao extends BaseDao<Revision> {
     
 }

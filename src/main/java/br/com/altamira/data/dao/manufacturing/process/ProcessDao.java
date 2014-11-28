@@ -1,6 +1,7 @@
 package br.com.altamira.data.dao.manufacturing.process;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.common.Material;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -9,6 +10,7 @@ import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
 import br.com.altamira.data.model.manufacturing.process.Process;
+import br.com.altamira.data.model.measurement.Unit;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -48,12 +50,18 @@ public class ProcessDao extends BaseDao<Process> {
 
             operation.getUse().stream().forEach((use) -> {
                 use.setOperation(operation);
+                use.setMaterial(entityManager.find(Material.class, use.getMaterial().getId()));
+                use.getQuantity().setUnit(entityManager.find(Unit.class, use.getQuantity().getUnit().getId()));
             });
             operation.getConsume().stream().forEach((consume) -> {
                 consume.setOperation(operation);
+                consume.setMaterial(entityManager.find(Material.class, consume.getMaterial().getId()));
+                consume.getQuantity().setUnit(entityManager.find(Unit.class, consume.getQuantity().getUnit().getId()));
             });
             operation.getProduce().stream().forEach((produce) -> {
                 produce.setOperation(operation);
+                produce.setMaterial(entityManager.find(Material.class, produce.getMaterial().getId()));
+                produce.getQuantity().setUnit(entityManager.find(Unit.class, produce.getQuantity().getUnit().getId()));
             });
 
         });

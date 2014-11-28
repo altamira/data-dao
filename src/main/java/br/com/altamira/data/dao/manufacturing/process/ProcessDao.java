@@ -29,9 +29,20 @@ public class ProcessDao extends BaseDao<Process> {
         if (entity.getOperation() != null) {
             entity.getOperation().size();
             entity.getOperation().stream().forEach((operation) -> {
-                operation.getUse().size();
-                operation.getConsume().size();
-                operation.getProduce().size();
+                if (operation.getUse() != null) {
+                    operation.getUse().size();
+                    operation.getUse().stream().forEach((use) -> {use.getMaterial();});
+                }
+                
+                if (operation.getConsume() != null) {
+                    operation.getConsume().size();
+                    operation.getConsume().stream().forEach((consume) -> {consume.getMaterial();});
+                }
+                
+                if (operation.getProduce() != null) {
+                    operation.getProduce().size();
+                    operation.getProduce().stream().forEach((produce) -> {produce.getMaterial();});
+                }
             });
         }
     }

@@ -1,9 +1,9 @@
-package br.com.altamira.data.dao.manufacturing.process;
+package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 
 import javax.ejb.Stateless;
-import br.com.altamira.data.model.manufacturing.process.Operation;
+import br.com.altamira.data.model.manufacture.process.Operation;
 import javax.ejb.EJB;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -57,8 +57,7 @@ public class OperationDao extends BaseDao<Operation> {
                 entity.get("sequence"),
                 entity.get("name")));
 
-        br.com.altamira.data.model.manufacturing.process.Process process = entityManager.find(
-                br.com.altamira.data.model.manufacturing.process.Process.class, 
+        br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class, 
                 Long.parseLong(parameters.get("parentId").get(0)));
         
         criteriaQuery.where(cb.equal(entity.get("process"), process.getId()));

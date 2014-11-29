@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.manufacturing.process;
+package br.com.altamira.data.dao.manufacture;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.model.manufacturing.process.Revision;
+import br.com.altamira.data.model.manufacture.Tooling;
 import javax.ejb.Stateless;
 
 /**
@@ -14,6 +14,6 @@ import javax.ejb.Stateless;
  * @author Alessandro
  */
 @Stateless
-public class RevisionDao extends BaseDao<Revision> {
+public class ToolingDao extends BaseDao<Tooling> {
     
 }

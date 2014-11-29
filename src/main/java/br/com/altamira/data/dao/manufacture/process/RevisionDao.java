@@ -3,17 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.manufacturing.order;
+package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.model.manufacturing.order.Order;
+import br.com.altamira.data.model.manufacture.process.Revision;
 import javax.ejb.Stateless;
 
 /**
  *
- * 
+ * @author Alessandro
  */
 @Stateless
-public class SalesOrderDao extends BaseDao<Order> {
-
+public class RevisionDao extends BaseDao<Revision> {
+    
 }

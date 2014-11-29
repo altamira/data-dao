@@ -1,4 +1,4 @@
-package br.com.altamira.data.dao.manufacturing.process;
+package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
@@ -9,7 +9,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
-import br.com.altamira.data.model.manufacturing.process.Process;
+import br.com.altamira.data.model.manufacture.process.Process;
 import br.com.altamira.data.model.measurement.Unit;
 import javax.ws.rs.core.MultivaluedMap;
 

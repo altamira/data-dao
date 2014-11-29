@@ -1,6 +1,6 @@
-package br.com.altamira.data.dao.manufacturing.process;
+package br.com.altamira.data.dao.manufacture.process;
 
-import br.com.altamira.data.model.manufacturing.process.Use;
+import br.com.altamira.data.model.manufacture.process.Use;
 
 import javax.ejb.Stateless;
 

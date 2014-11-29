@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.manufacturing.bom;
+package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.model.manufacturing.bom.BOMItem;
-import br.com.altamira.data.model.manufacturing.bom.BOMItemPart;
+import br.com.altamira.data.model.manufacture.bom.BOMItem;
+import br.com.altamira.data.model.manufacture.bom.BOMItemPart;
 import br.com.altamira.data.model.measurement.Unit;
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;

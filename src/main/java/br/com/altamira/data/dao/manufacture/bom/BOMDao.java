@@ -1,8 +1,8 @@
-package br.com.altamira.data.dao.manufacturing.bom;
+package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.manufacturing.bom.BOM;
+import br.com.altamira.data.model.manufacture.bom.BOM;
 
 import javax.ejb.Stateless;
 

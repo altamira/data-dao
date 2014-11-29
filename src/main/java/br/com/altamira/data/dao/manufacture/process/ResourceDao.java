@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.manufacturing.process;
+package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
-import br.com.altamira.data.model.manufacturing.process.Resource;
+import br.com.altamira.data.model.manufacture.process.Resource;
 import javax.ejb.Stateless;
 import javax.ws.rs.core.MultivaluedMap;
 

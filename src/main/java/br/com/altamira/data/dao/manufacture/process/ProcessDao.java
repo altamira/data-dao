@@ -29,6 +29,9 @@ public class ProcessDao extends BaseDao<Process> {
         if (entity.getOperation() != null) {
             entity.getOperation().size();
             entity.getOperation().stream().forEach((operation) -> {
+                
+                operation.getSketch();
+                
                 if (operation.getUse() != null) {
                     operation.getUse().size();
                     operation.getUse().stream().forEach((use) -> {use.getMaterial();});
@@ -59,6 +62,10 @@ public class ProcessDao extends BaseDao<Process> {
             return operation;
         }).forEach((operation) -> {
 
+            if (operation.getSketch() != null) {
+                operation.getSketch().setOperation(operation);
+            }
+
             operation.getUse().stream().forEach((use) -> {
                 use.setOperation(operation);
                 use.setMaterial(entityManager.find(Material.class, use.getMaterial().getId()));
@@ -74,7 +81,7 @@ public class ProcessDao extends BaseDao<Process> {
                 produce.setMaterial(entityManager.find(Material.class, produce.getMaterial().getId()));
                 produce.getQuantity().setUnit(entityManager.find(Unit.class, produce.getQuantity().getUnit().getId()));
             });
-
+            
         });
     }
 

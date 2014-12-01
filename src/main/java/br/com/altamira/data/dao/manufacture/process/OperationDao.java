@@ -32,6 +32,10 @@ public class OperationDao extends BaseDao<Operation> {
     
     @Override
     public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
+        if (entity.getSketch() != null) {
+            entity.getSketch().setOperation(entity);
+        }
+        
         entity.getUse().stream().forEach((u) -> {
             u.setOperation(entity);
         });

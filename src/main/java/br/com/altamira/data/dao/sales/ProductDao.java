@@ -12,5 +12,5 @@ import br.com.altamira.data.model.sales.Product;
  */
 @Stateless
 public class ProductDao extends BaseDao<Product> {
-
+    
 }

@@ -3,7 +3,7 @@ package br.com.altamira.data.dao.purchasing.request;
 import br.com.altamira.data.dao.BaseDao;
 
 import javax.ejb.Stateless;
-import br.com.altamira.data.model.purchasing.RequestItem;
+import br.com.altamira.data.model.purchase.RequestItem;
 
 /**
  *

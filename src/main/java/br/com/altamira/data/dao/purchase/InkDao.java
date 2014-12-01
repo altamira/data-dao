@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.purchasing;
+package br.com.altamira.data.dao.purchase;
 
 import br.com.altamira.data.dao.BaseDao;
 import javax.ejb.Stateless;
@@ -12,7 +12,7 @@ import javax.ejb.Stateless;
  *
  * @author Alessandro
  */
-@Stateless(name = "purchasing.MaterialDao")
-public class MaterialDao extends BaseDao<br.com.altamira.data.model.purchasing.Material> {
+@Stateless
+public class InkDao extends BaseDao<br.com.altamira.data.model.purchase.Ink> {
     
 }

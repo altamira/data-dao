@@ -5,8 +5,6 @@
  */
 package br.com.altamira.data.dao;
 
-import static br.com.altamira.data.dao.Dao.PAGE_SIZE_VALIDATION;
-import static br.com.altamira.data.dao.Dao.START_PAGE_VALIDATION;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +56,10 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
 
     }
 
+    public CriteriaQuery<T> fetchJoin(@Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id) {
+        return null;
+    }
+    
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
 
     }
@@ -116,9 +118,16 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
             }
         }
 
-        T entity = entityManager.find(getTypeClass(), id);
-
-        this.lazyLoad(entity);
+        CriteriaQuery<T> criteriaQuery = this.fetchJoin(id);
+        
+        T entity;
+        
+        if (criteriaQuery == null) {
+            entity = entityManager.find(getTypeClass(), id);
+            this.lazyLoad(entity);
+        } else {
+            entity = entityManager.createQuery(criteriaQuery).getSingleResult();
+        }
 
         return entity;
     }
@@ -247,7 +256,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         }
     }
 
-    private Class<T> getTypeClass() {
+    protected Class<T> getTypeClass() {
         Class<T> clazz = (Class<T>) ((ParameterizedType) this.getClass()
                 .getGenericSuperclass())
                 .getActualTypeArguments()[0];

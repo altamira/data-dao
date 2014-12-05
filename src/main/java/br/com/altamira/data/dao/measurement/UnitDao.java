@@ -24,22 +24,22 @@ import javax.ws.rs.core.MultivaluedMap;
 public class UnitDao extends BaseDao<Unit> {
 
     @Override
-    public CriteriaQuery getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
-        
+    public CriteriaQuery<Unit> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Unit> criteriaQuery = cb.createQuery(Unit.class);
         Root<Unit> entity = criteriaQuery.from(Unit.class);
 
         criteriaQuery.select(entity);
 
-        if (parameters.get("magnitude") != null && 
-                !parameters.get("magnitude").isEmpty()) {
+        if (parameters.get("magnitude") != null
+                && !parameters.get("magnitude").isEmpty()) {
             String searchCriteria = parameters.get("magnitude").get(0).toLowerCase().trim();
 
             Join<Unit, Magnitude> magnitude = entity.join("magnitude");
             criteriaQuery.where(cb.equal(cb.lower(magnitude.get("name")), searchCriteria));
         }
-        
+
         return criteriaQuery;
     }
 }

@@ -8,6 +8,7 @@ package br.com.altamira.data.dao.common;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Component;
 import br.com.altamira.data.model.measurement.Unit;
+
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -24,12 +25,9 @@ public class ComponentDao extends BaseDao<Component> {
 
     @Override
     public void lazyLoad(Component entity) {
-
         // Lazy load of items
-        if (entity.getMaterial() != null) {
-            entity.getMaterial();
-            entity.getQuantity();
-        }
+        //entity.getMaterial().getComponent().size();
+        entity.getMaterial().setComponent(null);
     }
 
     @Override

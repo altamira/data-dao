@@ -5,8 +5,9 @@
  */
 package br.com.altamira.data.dao.manufacture;
 
-import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.dao.common.MaterialBaseDao;
 import br.com.altamira.data.model.manufacture.Machine;
+
 import javax.ejb.Stateless;
 
 /**
@@ -14,6 +15,7 @@ import javax.ejb.Stateless;
  * @author Alessandro
  */
 @Stateless
-public class MachineDao extends BaseDao<Machine> {
+public class MachineDao extends MaterialBaseDao<Machine> {
+
     
 }

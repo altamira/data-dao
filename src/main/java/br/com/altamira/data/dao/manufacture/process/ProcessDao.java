@@ -29,22 +29,31 @@ public class ProcessDao extends BaseDao<Process> {
         if (entity.getOperation() != null) {
             entity.getOperation().size();
             entity.getOperation().stream().forEach((operation) -> {
-                
+
                 operation.getSketch();
-                
+
                 if (operation.getUse() != null) {
                     operation.getUse().size();
-                    operation.getUse().stream().forEach((use) -> {use.getMaterial();});
+                    operation.getUse().stream().forEach((use) -> {
+                        //use.getMaterial().getComponent().size();
+                        use.getMaterial().setComponent(null);
+                    });
                 }
-                
+
                 if (operation.getConsume() != null) {
                     operation.getConsume().size();
-                    operation.getConsume().stream().forEach((consume) -> {consume.getMaterial();});
+                    operation.getConsume().stream().forEach((consume) -> {
+                        //consume.getMaterial().getComponent().size();
+                        consume.getMaterial().setComponent(null);
+                    });
                 }
-                
+
                 if (operation.getProduce() != null) {
                     operation.getProduce().size();
-                    operation.getProduce().stream().forEach((produce) -> {produce.getMaterial();});
+                    operation.getProduce().stream().forEach((produce) -> {
+                        //produce.getMaterial().getComponent().size();
+                        produce.getMaterial().setComponent(null);
+                    });
                 }
             });
         }
@@ -62,8 +71,11 @@ public class ProcessDao extends BaseDao<Process> {
             return operation;
         }).forEach((operation) -> {
 
-            if (operation.getSketch() != null) {
+            if (operation.getSketch() != null
+                    && operation.getSketch().getImage().length > 0) {
                 operation.getSketch().setOperation(operation);
+            } else {
+                operation.setSketch(null);
             }
 
             operation.getUse().stream().forEach((use) -> {
@@ -81,12 +93,12 @@ public class ProcessDao extends BaseDao<Process> {
                 produce.setMaterial(entityManager.find(Material.class, produce.getMaterial().getId()));
                 produce.getQuantity().setUnit(entityManager.find(Unit.class, produce.getQuantity().getUnit().getId()));
             });
-            
+
         });
     }
 
     @Override
-    public CriteriaQuery getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    public CriteriaQuery<Process> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Process> criteriaQuery = cb.createQuery(Process.class);
         Root<Process> entity = criteriaQuery.from(Process.class);
@@ -96,16 +108,18 @@ public class ProcessDao extends BaseDao<Process> {
                 entity.get("code"),
                 entity.get("description")));
 
-        if (parameters.get("search") != null &&
-                !parameters.get("search").isEmpty()) {
+        if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()) {
             String searchCriteria = "%" + parameters.get("search").get(0)
                     .toLowerCase().trim() + "%";
 
             criteriaQuery.where(cb.or(
                     cb.like(cb.lower(entity.get("code")), searchCriteria),
                     cb.like(cb.lower(entity.get("description")), searchCriteria)));
+        } else {
+            // TODO: list pending processes        	
         }
-        
+
         criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
 
         return criteriaQuery;

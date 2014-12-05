@@ -18,22 +18,50 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless
 public class OperationDao extends BaseDao<Operation> {
-    
+
     @EJB
     private ProcessDao processDao;
-    
+
     @Override
     public void lazyLoad(Operation entity) {
         entity.getSketch();
+
         entity.getUse().size();
         entity.getConsume().size();
-        entity.getProduce().size();    
+        entity.getProduce().size();
+
+        if (entity.getUse() != null) {
+            entity.getUse().size();
+            entity.getUse().stream().forEach((use) -> {
+                //use.getMaterial().getComponent().size();
+                use.getMaterial().setComponent(null);
+            });
+        }
+
+        if (entity.getConsume() != null) {
+            entity.getConsume().size();
+            entity.getConsume().stream().forEach((consume) -> {
+                //consume.getMaterial().getComponent().size();
+                consume.getMaterial().setComponent(null);
+            });
+        }
+
+        if (entity.getProduce() != null) {
+            entity.getProduce().size();
+            entity.getProduce().stream().forEach((produce) -> {
+                //produce.getMaterial().getComponent().size();
+                produce.getMaterial().setComponent(null);
+            });
+        }
     }
-    
+
     @Override
-    public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
-        if (entity.getSketch() != null) {
+        public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
+        if (entity.getSketch() != null && 
+                entity.getSketch().getImage().length > 0) {
             entity.getSketch().setOperation(entity);
+        } else {
+            entity.setSketch(null);
         }
         
         entity.getUse().stream().forEach((u) -> {
@@ -50,23 +78,32 @@ public class OperationDao extends BaseDao<Operation> {
     }
 
     @Override
-    public CriteriaQuery getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+        public CriteriaQuery<Operation> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class);
+        CriteriaQuery
+
+<Operation> criteriaQuery = cb.createQuery(Operation.class  
+
+    );
         Root<Operation> entity = criteriaQuery.from(Operation.class);
 
-        criteriaQuery.select(cb.construct(Operation.class,
+    criteriaQuery.select (cb.construct
+
+    (Operation.class  
+
+        ,
                 entity.get("id"),
                 entity.get("sequence"),
                 entity.get("name")));
 
-        br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class, 
+        br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class,
                 Long.parseLong(parameters.get("parentId").get(0)));
+
+        criteriaQuery.where (cb.equal
+        (entity.get("process"), process.getId()));
         
-        criteriaQuery.where(cb.equal(entity.get("process"), process.getId()));
-        
-        return criteriaQuery;
+        return criteriaQuery ;
     }
-    
+
 }

@@ -22,6 +22,10 @@ public class OperationDao extends BaseDao<Operation> {
     @EJB
     private ProcessDao processDao;
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(Operation entity) {
         entity.getSketch();
@@ -55,6 +59,11 @@ public class OperationDao extends BaseDao<Operation> {
         }
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
         public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
         if (entity.getSketch() != null && 
@@ -77,6 +86,11 @@ public class OperationDao extends BaseDao<Operation> {
         });
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
         public CriteriaQuery<Operation> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         

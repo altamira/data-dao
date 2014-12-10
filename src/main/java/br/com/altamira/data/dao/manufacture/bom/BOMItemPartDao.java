@@ -19,10 +19,16 @@ import javax.ws.rs.core.MultivaluedMap;
 /**
  *
  *
+ * @author Alessandro
  */
 @Stateless
 public class BOMItemPartDao extends BaseDao<BOMItemPart> {
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(BOMItemPart entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
@@ -36,6 +42,11 @@ public class BOMItemPartDao extends BaseDao<BOMItemPart> {
         entity.getWeight().setUnit(entityManager.find(Unit.class, entity.getWeight().getUnit().getId()));
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<BOMItemPart> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Stateless;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -31,7 +32,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author Alessandro
  * @param <T>
  */
-
+@Stateless
 public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> implements Dao<T> {
 
     /**
@@ -52,18 +53,37 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     @Inject
     protected Validator validator;
 
+    /**
+     *
+     * @param entity
+     */
     public void lazyLoad(T entity) {
 
     }
 
+    /**
+     *
+     * @param id
+     * @return
+     */
     public CriteriaQuery<T> fetchJoin(@Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id) {
         return null;
     }
     
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
 
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     public CriteriaQuery<T> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = cb.createQuery(getTypeClass());
@@ -175,6 +195,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     /**
      *
      * @param entity
+     * @param parameters
      * @return
      */
     @Override
@@ -256,6 +277,10 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         }
     }
 
+    /**
+     *
+     * @return
+     */
     protected Class<T> getTypeClass() {
         Class<T> clazz = (Class<T>) ((ParameterizedType) this.getClass()
                 .getGenericSuperclass())

@@ -23,6 +23,10 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class ComponentDao extends BaseDao<Component> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(Component entity) {
         // Lazy load of items
@@ -30,6 +34,11 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getMaterial().setComponent(null);
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(br.com.altamira.data.model.common.Component entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
@@ -42,6 +51,11 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getQuantity().setUnit(entityManager.find(Unit.class, entity.getQuantity().getUnit().getId()));
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<Component> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
 

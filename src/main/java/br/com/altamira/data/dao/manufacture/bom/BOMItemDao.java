@@ -18,10 +18,15 @@ import javax.ws.rs.core.MultivaluedMap;
 /**
  *
  *
+ * @author Alessandro
  */
 @Stateless
 public class BOMItemDao extends BaseDao<BOMItem> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(BOMItem entity) {
         // Lazy load of items
@@ -30,6 +35,11 @@ public class BOMItemDao extends BaseDao<BOMItem> {
         }
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(BOMItem entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
@@ -42,6 +52,11 @@ public class BOMItemDao extends BaseDao<BOMItem> {
         });
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<BOMItem> getCriteriaQuery(
             @NotNull MultivaluedMap<String, String> parameters) {

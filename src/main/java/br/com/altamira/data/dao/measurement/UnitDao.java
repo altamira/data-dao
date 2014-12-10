@@ -23,6 +23,11 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class UnitDao extends BaseDao<Unit> {
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<Unit> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
 

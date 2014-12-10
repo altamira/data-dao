@@ -15,22 +15,60 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<persistence version="2.0"
-   xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="
-        http://java.sun.com/xml/ns/persistence
-        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-   <persistence-unit name="primary">
-      <!-- We use a different datasource for tests, so as to not overwrite 
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="         http://java.sun.com/xml/ns/persistence         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+  <persistence-unit name="OracleDS" transaction-type="JTA">
+    <!-- We use a different datasource for tests, so as to not overwrite 
          production data. This is an unmanaged data source, backed by H2, an in memory 
          database. Production applications should use a managed datasource. -->
-      <!-- The datasource is deployed as WEB-INF/test-ds.xml, 
+    <!-- The datasource is deployed as WEB-INF/test-ds.xml, 
          you can find it in the source at src/test/resources/test-ds.xml -->
-      <jta-data-source>java:jboss/datasources/data-daoTestDS</jta-data-source>
-      <properties>
-         <!-- Properties for Hibernate -->
-         <property name="hibernate.hbm2ddl.auto" value="create-drop" />
-         <property name="hibernate.show_sql" value="false" />
-      </properties>
-   </persistence-unit>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <jta-data-source>java:jboss/datasources/OracleDS</jta-data-source>
+    <class>br.com.altamira.data.model.Measurement</class>
+    <class>br.com.altamira.data.model.Process</class>
+    <class>br.com.altamira.data.model.Property</class>
+    <class>br.com.altamira.data.model.Relation</class>
+    <class>br.com.altamira.data.model.Resource</class>
+    <class>br.com.altamira.data.model.common.Color</class>
+    <class>br.com.altamira.data.model.common.Component</class>
+    <class>br.com.altamira.data.model.common.Material</class>
+    <class>br.com.altamira.data.model.manufacture.Machine</class>
+    <class>br.com.altamira.data.model.manufacture.Tooling</class>
+    <class>br.com.altamira.data.model.manufacture.bom.BOM</class>
+    <class>br.com.altamira.data.model.manufacture.bom.BOMItem</class>
+    <class>br.com.altamira.data.model.manufacture.bom.BOMItemPart</class>
+    <class>br.com.altamira.data.model.manufacture.order.Order</class>
+    <class>br.com.altamira.data.model.manufacture.order.OrderItem</class>
+    <class>br.com.altamira.data.model.manufacture.order.OrderItemPart</class>
+    <class>br.com.altamira.data.model.manufacture.process.Consume</class>
+    <class>br.com.altamira.data.model.manufacture.process.Operation</class>
+    <class>br.com.altamira.data.model.manufacture.process.Process</class>
+    <class>br.com.altamira.data.model.manufacture.process.Produce</class>
+    <class>br.com.altamira.data.model.manufacture.process.Revision</class>
+    <class>br.com.altamira.data.model.manufacture.process.Sketch</class>
+    <class>br.com.altamira.data.model.manufacture.process.Use</class>
+    <class>br.com.altamira.data.model.measurement.Magnitude</class>
+    <class>br.com.altamira.data.model.measurement.Unit</class>
+    <class>br.com.altamira.data.model.purchase.Ink</class>
+    <class>br.com.altamira.data.model.purchase.Inputs</class>
+    <class>br.com.altamira.data.model.purchase.Material</class>
+    <class>br.com.altamira.data.model.purchase.Request</class>
+    <class>br.com.altamira.data.model.purchase.RequestItem</class>
+    <class>br.com.altamira.data.model.sales.Order</class>
+    <class>br.com.altamira.data.model.sales.OrderItem</class>
+    <class>br.com.altamira.data.model.sales.OrderItemPart</class>
+    <class>br.com.altamira.data.model.sales.Product</class>
+    <class>br.com.altamira.data.model.security.AccessToken</class>
+    <class>br.com.altamira.data.model.security.Member</class>
+    <class>br.com.altamira.data.model.security.Permission</class>
+    <class>br.com.altamira.data.model.security.Profile</class>
+    <class>br.com.altamira.data.model.security.User</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <properties>
+      <!-- Properties for Hibernate -->
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+      <property name="hibernate.show_sql" value="true"/>
+      <property name="hibernate.format_sql" value="true"/>
+    </properties>
+  </persistence-unit>
 </persistence>

@@ -1,6 +1,7 @@
 package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.manufacture.bom.BOM;
 
 import javax.ejb.Stateless;
@@ -20,6 +21,10 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class BOMDao extends BaseDao<BOM> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(BOM entity) {
 
@@ -29,12 +34,17 @@ public class BOMDao extends BaseDao<BOM> {
             entity.getItems().stream().forEach((item) -> {
                 item.getParts().size();
                 item.getParts().stream().forEach((part) -> {
-
+                    
                 });
             });
         }
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(BOM entity, MultivaluedMap<String, String> parameters) {
         // Resolve dependencies
@@ -44,10 +54,16 @@ public class BOMDao extends BaseDao<BOM> {
         }).forEach((item) -> {
             item.getParts().stream().forEach((part) -> {
                 part.setBOMItem(item);
+                part.setColor(entityManager.find(Color.class, part.getColor().getId()));
             });
         });
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(
             @NotNull MultivaluedMap<String, String> parameters) {

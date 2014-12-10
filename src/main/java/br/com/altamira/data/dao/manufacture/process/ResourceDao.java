@@ -19,11 +19,20 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public abstract class ResourceDao<T extends Resource> extends BaseDao<T> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(Resource entity) {
         entity.getMaterial();
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
         entity.setMaterial(entityManager.find(Material.class, entity.getMaterial().getId()));

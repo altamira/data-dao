@@ -12,6 +12,7 @@ import javax.ejb.Stateless;
 /**
  *
  * 
+ * @author Alessandro
  */
 @Stateless
 public class SalesOrderDao extends BaseDao<Order> {

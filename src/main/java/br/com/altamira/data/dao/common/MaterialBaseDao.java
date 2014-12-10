@@ -22,6 +22,10 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless(name = "common.MaterialDao")
 public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.common.Material> extends BaseDao<T> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(T entity) {
         // Lazy load of items
@@ -45,6 +49,13 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         return criteriaQuery;
     }*/
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
+    
+
     @Override
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
@@ -61,6 +72,11 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         }
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<T> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();

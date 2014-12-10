@@ -20,6 +20,10 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class ProcessDao extends BaseDao<Process> {
 
+    /**
+     *
+     * @param entity
+     */
     @Override
     public void lazyLoad(Process entity) {
         // Lazy load of revision
@@ -59,6 +63,11 @@ public class ProcessDao extends BaseDao<Process> {
         }
     }
 
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
     @Override
     public void resolveDependencies(Process entity, MultivaluedMap<String, String> parameters) {
         // Resolve dependencies
@@ -97,6 +106,11 @@ public class ProcessDao extends BaseDao<Process> {
         });
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
     @Override
     public CriteriaQuery<Process> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();

@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao;
 
 import java.util.List;
+import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
@@ -17,7 +18,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author Alessandro
  * @param <T>
  */
-
+@Stateless
 public interface Dao<T extends br.com.altamira.data.model.Entity> {
 
     /**

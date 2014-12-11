@@ -144,6 +144,9 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         
         if (criteriaQuery == null) {
             entity = entityManager.find(getTypeClass(), id);
+            if (entity == null) { 
+                throw new NoResultException();
+            }
             this.lazyLoad(entity);
         } else {
             entity = entityManager.createQuery(criteriaQuery).getSingleResult();

@@ -88,7 +88,14 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
                 entity.get("code"),
                 entity.get("description")));
 
-        if (parameters.get("search") != null
+        if (parameters.get("code") != null
+                && !parameters.get("code").isEmpty()) {
+            String searchCriteria = parameters.get("code").get(0)
+                    .toLowerCase().trim();
+
+            criteriaQuery.where(
+                    cb.equal(cb.lower(entity.get("code")), searchCriteria));
+        } else if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {
             String searchCriteria = "%" + parameters.get("search").get(0)
                     .toLowerCase().trim() + "%";
@@ -98,8 +105,10 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
                     cb.like(cb.lower(entity.get("description")), searchCriteria)));
         }
 
-        criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
+        //criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
 
         return criteriaQuery;
     }
+    
+    
 }

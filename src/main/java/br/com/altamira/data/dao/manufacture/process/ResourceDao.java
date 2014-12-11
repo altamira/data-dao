@@ -25,7 +25,7 @@ public abstract class ResourceDao<T extends Resource> extends BaseDao<T> {
      */
     @Override
     public void lazyLoad(Resource entity) {
-        entity.getMaterial();
+        entity.getMaterial().setComponent(null);
     }
 
     /**

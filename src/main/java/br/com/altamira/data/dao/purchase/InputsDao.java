@@ -5,7 +5,7 @@
  */
 package br.com.altamira.data.dao.purchase;
 
-import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.dao.common.MaterialBaseDao;
 import javax.ejb.Stateless;
 
 /**
@@ -13,6 +13,6 @@ import javax.ejb.Stateless;
  * @author Alessandro
  */
 @Stateless
-public class InputsDao extends BaseDao<br.com.altamira.data.model.purchase.Inputs> {
+public class InputsDao extends MaterialBaseDao<br.com.altamira.data.model.purchase.Inputs> {
     
 }

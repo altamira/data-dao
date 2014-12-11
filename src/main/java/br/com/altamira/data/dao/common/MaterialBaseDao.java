@@ -8,10 +8,13 @@ package br.com.altamira.data.dao.common;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Unit;
 import javax.ejb.Stateless;
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -24,6 +27,11 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
 
     /**
      *
+     */
+    public static final String CODE_VALIDATION = "Code can't be null.";
+
+    /**
+     *
      * @param entity
      */
     @Override
@@ -31,31 +39,15 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         // Lazy load of items
         entity.getComponent().size();
         entity.getComponent().forEach((component) -> {
-            //component.getMaterial().getComponent().size();
             component.getMaterial().setComponent(null);
         });
     }
-
-    /*@Override
-    public CriteriaQuery<T> fetchJoin(@Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> criteriaQuery = cb.createQuery(getTypeClass());
-        Root<T> entity = criteriaQuery.from(getTypeClass());
-        
-        entity.fetch("component");
-        
-        criteriaQuery.select(entity);
-        
-        return criteriaQuery;
-    }*/
 
     /**
      *
      * @param entity
      * @param parameters
      */
-    
-
     @Override
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
@@ -88,15 +80,9 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
                 entity.get("code"),
                 entity.get("description")));
 
-        if (parameters.get("code") != null
-                && !parameters.get("code").isEmpty()) {
-            String searchCriteria = parameters.get("code").get(0)
-                    .toLowerCase().trim();
-
-            criteriaQuery.where(
-                    cb.equal(cb.lower(entity.get("code")), searchCriteria));
-        } else if (parameters.get("search") != null
+        if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {
+            
             String searchCriteria = "%" + parameters.get("search").get(0)
                     .toLowerCase().trim() + "%";
 
@@ -105,10 +91,31 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
                     cb.like(cb.lower(entity.get("description")), searchCriteria)));
         }
 
-        //criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
-
         return criteriaQuery;
     }
-    
-    
+
+    /**
+     *
+     * @param code
+     * @return 
+     */
+    public T find(
+            @NotNull @Size(min = 3, message = CODE_VALIDATION) String code)
+            throws ConstraintViolationException, NoResultException {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> criteriaQuery = cb.createQuery(getTypeClass());
+        Root<T> entity = criteriaQuery.from(getTypeClass());
+
+        criteriaQuery.select(cb.construct(getTypeClass(),
+                entity.get("id"),
+                entity.get("code"),
+                entity.get("description")));
+
+        criteriaQuery.where(
+                cb.equal(cb.lower(entity.get("code")), code.toLowerCase().trim()));
+
+        return entityManager.createQuery(criteriaQuery).getSingleResult();
+    }
+
 }

@@ -92,7 +92,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
 
         criteriaQuery.select(entity);
         
-        criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
+        //criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
 
         return criteriaQuery;
     }

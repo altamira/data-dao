@@ -78,7 +78,8 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         criteriaQuery.select(cb.construct(getTypeClass(),
                 entity.get("id"),
                 entity.get("code"),
-                entity.get("description")));
+                entity.get("description"),
+                entity.get("entityClass")));
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {

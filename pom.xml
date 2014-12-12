@@ -21,7 +21,7 @@
 
     <groupId>br.com.altamira</groupId>
     <artifactId>data-dao</artifactId>
-    <version>0.7.4-SNAPSHOT</version>
+    <version>0.7.5-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Data DAO</name>
 

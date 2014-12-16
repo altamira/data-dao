@@ -30,7 +30,7 @@ import javax.ws.rs.core.MultivaluedMap;
 public class BOMDao extends BaseDao<BOM> {
 
     @Inject
-    private br.com.altamira.data.dao.manufacture.bom.MaterialDao materialDao;
+    private br.com.altamira.data.dao.common.MaterialAliasDao materialAliasDao;
 
     /**
      *
@@ -84,9 +84,9 @@ public class BOMDao extends BaseDao<BOM> {
                 if (part.getMaterial() != null) {
                     part.setMaterial(entityManager.find(Material.class, part.getMaterial().getId()));
                 } else {
-                    br.com.altamira.data.model.manufacture.bom.Material ref = materialDao.find(part.getCode());
-                    if (ref != null) {
-                        part.setMaterial(ref.getMaterial());
+                    br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(part.getCode());
+                    if (alias != null) {
+                        part.setMaterial(alias.getMaterial());
                     }
                 }
             });
@@ -158,12 +158,12 @@ public class BOMDao extends BaseDao<BOM> {
                 item.getParts().stream().forEach((part) -> {
                     if (part.getMaterial() != null) {
                         try {
-                            materialDao.find(part.getMaterial().getCode());
+                            materialAliasDao.find(part.getMaterial().getCode());
                         } catch (EJBException e) {
                             if (e.getCausedByException() instanceof NoResultException) {
-                                br.com.altamira.data.model.manufacture.bom.Material material
-                                        = new br.com.altamira.data.model.manufacture.bom.Material(part.getCode(), part.getDescription());
-                                materialDao.create(material, parameters);
+                                br.com.altamira.data.model.common.MaterialAlias alias
+                                        = new br.com.altamira.data.model.common.MaterialAlias(part.getCode(), part.getDescription());
+                                materialAliasDao.create(alias, parameters);
                             } else {
                                 throw e;
                             }

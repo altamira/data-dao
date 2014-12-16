@@ -78,7 +78,25 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) {
 
     }
+    
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
+    public void afterCreated(T entity, MultivaluedMap<String, String> parameters) {
 
+    }
+    
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
+    public void afterUpdated(T entity, MultivaluedMap<String, String> parameters) {
+
+    }
+    
     /**
      *
      * @param parameters
@@ -186,6 +204,8 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
 
         entityManager.persist(entity);
         entityManager.flush();
+        
+        this.afterCreated(entity, parameters);
 
         entity = entityManager.find(getTypeClass(), entity.getId());
 
@@ -227,6 +247,8 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entity = entityManager.merge(entity);
         entityManager.flush();
 
+        this.afterUpdated(entity, parameters);
+        
         entity = entityManager.find(getTypeClass(), entity.getId());
 
         this.lazyLoad(entity);

@@ -79,11 +79,11 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
                 entity.get("id"),
                 entity.get("code"),
                 entity.get("description"),
-                entity.get("entityClass")));
+                entity.get("type")));
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {
-            
+
             String searchCriteria = "%" + parameters.get("search").get(0)
                     .toLowerCase().trim() + "%";
 
@@ -98,7 +98,7 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
     /**
      *
      * @param code
-     * @return 
+     * @return
      */
     public T find(
             @NotNull @Size(min = 3, message = CODE_VALIDATION) String code)
@@ -108,15 +108,16 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         CriteriaQuery<T> criteriaQuery = cb.createQuery(getTypeClass());
         Root<T> entity = criteriaQuery.from(getTypeClass());
 
-        criteriaQuery.select(cb.construct(getTypeClass(),
-                entity.get("id"),
-                entity.get("code"),
-                entity.get("description")));
+        criteriaQuery.select(entity);
 
         criteriaQuery.where(
                 cb.equal(cb.lower(entity.get("code")), code.toLowerCase().trim()));
 
-        return entityManager.createQuery(criteriaQuery).getSingleResult();
+        T material = entityManager.createQuery(criteriaQuery).getSingleResult();
+
+        lazyLoad(material);
+
+        return material;
     }
 
 }

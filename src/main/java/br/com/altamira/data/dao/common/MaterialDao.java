@@ -8,7 +8,7 @@ import br.com.altamira.data.model.common.Material;
  *
  * @author Alessandro
  */
-@Stateless
+@Stateless(name = "common.MaterialDao")
 public class MaterialDao extends MaterialBaseDao<Material> {
 
 }

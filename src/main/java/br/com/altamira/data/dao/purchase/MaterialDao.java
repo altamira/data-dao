@@ -13,7 +13,7 @@ import javax.ejb.Stateless;
  *
  * @author Alessandro
  */
-@Stateless(name = "purchasing.MaterialDao")
+@Stateless(name = "purchase.MaterialDao")
 public class MaterialDao extends MaterialBaseDao<br.com.altamira.data.model.purchase.Material> {
     
 }

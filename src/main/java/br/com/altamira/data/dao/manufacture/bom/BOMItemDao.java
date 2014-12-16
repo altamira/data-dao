@@ -6,6 +6,8 @@
 package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.common.Color;
+import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
 import br.com.altamira.data.model.manufacture.bom.BOMItem;
 import javax.ejb.Stateless;
@@ -32,6 +34,11 @@ public class BOMItemDao extends BaseDao<BOMItem> {
         // Lazy load of items
         if (entity.getParts() != null) {
             entity.getParts().size();
+            entity.getParts().stream().forEach((part) -> {
+                if (part.getMaterial() != null) {
+                    part.getMaterial().setComponent(null);
+                }
+            });
         }
     }
 
@@ -43,12 +50,16 @@ public class BOMItemDao extends BaseDao<BOMItem> {
     @Override
     public void resolveDependencies(BOMItem entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
-        entity.setBOM(entityManager.find(BOM.class, 
+        entity.setBOM(entityManager.find(BOM.class,
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         // Resolve dependencies
         entity.getParts().stream().forEach((part) -> {
             part.setBOMItem(entity);
+            part.setColor(entityManager.find(Color.class, part.getColor().getId()));
+            if (part.getMaterial() != null) {
+                part.setMaterial(entityManager.find(Material.class, part.getMaterial().getId()));
+            }
         });
     }
 
@@ -67,9 +78,9 @@ public class BOMItemDao extends BaseDao<BOMItem> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("bom"), 
+        criteriaQuery.where(cb.equal(entity.get("bom"),
                 Long.parseLong(parameters.get("parentId").get(0))));
-        
+
         return criteriaQuery;
     }
 

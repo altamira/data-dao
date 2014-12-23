@@ -95,7 +95,9 @@ public class BOMDao extends BaseDao<BOM> {
                 entity.get("id"),
                 entity.get("number"),
                 entity.get("customer"),
-                entity.get("checked")));
+                entity.get("checked"),
+                entity.get("created"),
+                entity.get("delivery")));
 
         // filter by checked/unchecked
         if (parameters.get("checked") != null

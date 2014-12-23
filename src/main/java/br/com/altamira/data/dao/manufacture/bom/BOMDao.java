@@ -10,14 +10,10 @@ import br.com.altamira.data.model.manufacture.bom.BOMItemPart;
 import javax.ejb.Stateless;
 
 import java.util.Date;
-import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
@@ -45,9 +41,7 @@ public class BOMDao extends BaseDao<BOM> {
             entity.getItems().stream().forEach((item) -> {
                 item.getParts().size();
                 item.getParts().stream().forEach((part) -> {
-                    if (part.getMaterial() != null) {
-                        part.getMaterial().setComponent(null);
-                    }
+                    part.getMaterial().setComponent(null);
                 });
             });
         }
@@ -59,39 +53,31 @@ public class BOMDao extends BaseDao<BOM> {
      * @param parameters
      */
     @Override
-    public void afterCreated(BOM entity, MultivaluedMap<String, String> parameters) {
-        this.updateMaterialReference(entity, parameters);
-    }
-
-    @Override
-    public void afterUpdated(BOM entity, MultivaluedMap<String, String> parameters) {
-        this.updateMaterialReference(entity, parameters);
-    }
-
-    /**
-     *
-     * @param entity
-     * @param parameters
-     */
-    @Override
-    public void resolveDependencies(BOM entity, MultivaluedMap<String, String> parameters) {
+    public void resolveDependencies(BOM entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+        entity.setChecked(null);
+        
         // Resolve dependencies
         entity.getItems().stream().forEach((BOMItem item) -> {
             item.setBOM(entity);
             item.getParts().stream().forEach((BOMItemPart part) -> {
                 part.setBOMItem(item);
                 part.setColor(entityManager.find(Color.class, part.getColor().getId()));
-                if (part.getMaterial() != null) {
-                    part.setMaterial(entityManager.find(Material.class, part.getMaterial().getId()));
-                } else {
-                    br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(part.getCode());
+                
+                Material material = entityManager.find(Material.class, part.getMaterial().getId());
+                
+                if (material == null) {
+                    br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(part.getMaterial().getCode());
                     if (alias != null) {
-                        part.setMaterial(alias.getMaterial());
+                        material = alias.getMaterial();
+                    } else {
+                        throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + part.getMaterial().getCode() + " " + part.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
                     }
                 }
+                
+                part.setMaterial(material);
             });
         });
-    }
+     }
 
     /**
      *
@@ -150,28 +136,6 @@ public class BOMDao extends BaseDao<BOM> {
 
         return super.update(bom, null);
 
-    }
-
-    private void updateMaterialReference(BOM entity, MultivaluedMap<String, String> parameters) {
-        if (entity.getItems() != null) {
-            entity.getItems().stream().forEach((item) -> {
-                item.getParts().stream().forEach((part) -> {
-                    if (part.getMaterial() != null) {
-                        try {
-                            materialAliasDao.find(part.getMaterial().getCode());
-                        } catch (EJBException e) {
-                            if (e.getCausedByException() instanceof NoResultException) {
-                                br.com.altamira.data.model.common.MaterialAlias alias
-                                        = new br.com.altamira.data.model.common.MaterialAlias(part.getCode(), part.getDescription());
-                                materialAliasDao.create(alias, parameters);
-                            } else {
-                                throw e;
-                            }
-                        }
-                    }
-                });
-            });
-        }
     }
 
 }

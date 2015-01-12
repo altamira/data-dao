@@ -9,7 +9,7 @@ import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
-import br.com.altamira.data.model.manufacture.bom.BOMItem;
+import br.com.altamira.data.model.manufacture.bom.Item;
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -22,21 +22,22 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless
-public class BOMItemDao extends BaseDao<BOMItem> {
+@Stateless(name = "manufacture.bom.ItemDao")
+public class ItemDao extends BaseDao<Item> {
 
     /**
      *
      * @param entity
      */
     @Override
-    public void lazyLoad(BOMItem entity) {
+    public void lazyLoad(Item entity) {
         // Lazy load of items
-        if (entity.getParts() != null) {
-            entity.getParts().size();
-            entity.getParts().stream().forEach((part) -> {
-                if (part.getMaterial() != null) {
-                    part.getMaterial().setComponent(null);
+        if (entity.getComponent() != null) {
+            entity.getComponent().size();
+            entity.getComponent().stream().forEach((component) -> {
+                if (component.getMaterial() != null) {
+                    component.getMaterial().setComponent(null);
+                    component.setDelivery(null);
                 }
             });
         }
@@ -48,14 +49,14 @@ public class BOMItemDao extends BaseDao<BOMItem> {
      * @param parameters
      */
     @Override
-    public void resolveDependencies(BOMItem entity, MultivaluedMap<String, String> parameters) {
+    public void resolveDependencies(Item entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
         entity.setBOM(entityManager.find(BOM.class,
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         // Resolve dependencies
-        entity.getParts().stream().forEach((part) -> {
-            part.setBOMItem(entity);
+        entity.getComponent().stream().forEach((part) -> {
+            part.setItem(entity);
             part.setColor(entityManager.find(Color.class, part.getColor().getId()));
             if (part.getMaterial() != null) {
                 part.setMaterial(entityManager.find(Material.class, part.getMaterial().getId()));
@@ -69,12 +70,12 @@ public class BOMItemDao extends BaseDao<BOMItem> {
      * @return
      */
     @Override
-    public CriteriaQuery<BOMItem> getCriteriaQuery(
+    public CriteriaQuery<Item> getCriteriaQuery(
             @NotNull MultivaluedMap<String, String> parameters) {
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<BOMItem> criteriaQuery = cb.createQuery(BOMItem.class);
-        Root<BOMItem> entity = criteriaQuery.from(BOMItem.class);
+        CriteriaQuery<Item> criteriaQuery = cb.createQuery(Item.class);
+        Root<Item> entity = criteriaQuery.from(Item.class);
 
         criteriaQuery.select(entity);
 

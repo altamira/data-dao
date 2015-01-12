@@ -65,22 +65,22 @@ public class OperationDao extends BaseDao<Operation> {
      * @param parameters
      */
     @Override
-        public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
-        if (entity.getSketch() != null && 
-                entity.getSketch().getImage().length > 0) {
+    public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
+        if (entity.getSketch() != null
+                && entity.getSketch().getImage().length > 0) {
             entity.getSketch().setOperation(entity);
         } else {
             entity.setSketch(null);
         }
-        
+
         entity.getUse().stream().forEach((u) -> {
             u.setOperation(entity);
         });
-        
+
         entity.getConsume().stream().forEach((c) -> {
             c.setOperation(entity);
         });
-        
+
         entity.getProduce().stream().forEach((p) -> {
             p.setOperation(entity);
         });
@@ -92,21 +92,14 @@ public class OperationDao extends BaseDao<Operation> {
      * @return
      */
     @Override
-        public CriteriaQuery<Operation> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
-        
+    public CriteriaQuery<Operation> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery
-
-<Operation> criteriaQuery = cb.createQuery(Operation.class  
-
-    );
+        CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class
+        );
         Root<Operation> entity = criteriaQuery.from(Operation.class);
 
-    criteriaQuery.select (cb.construct
-
-    (Operation.class  
-
-        ,
+        criteriaQuery.select(cb.construct(Operation.class,
                 entity.get("id"),
                 entity.get("sequence"),
                 entity.get("name")));
@@ -114,10 +107,9 @@ public class OperationDao extends BaseDao<Operation> {
         br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class,
                 Long.parseLong(parameters.get("parentId").get(0)));
 
-        criteriaQuery.where (cb.equal
-        (entity.get("process"), process.getId()));
-        
-        return criteriaQuery ;
+        criteriaQuery.where(cb.equal(entity.get("process"), process.getId()));
+
+        return criteriaQuery;
     }
 
 }

@@ -4,8 +4,8 @@ import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
-import br.com.altamira.data.model.manufacture.bom.BOMItem;
-import br.com.altamira.data.model.manufacture.bom.BOMItemPart;
+import br.com.altamira.data.model.manufacture.bom.Item;
+import br.com.altamira.data.model.manufacture.bom.Component;
 
 import javax.ejb.Stateless;
 
@@ -22,7 +22,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * Sales bom persistency strategy
  *
  */
-@Stateless
+@Stateless(name = "manufacture.bom.BOMDao")
 public class BOMDao extends BaseDao<BOM> {
 
     @Inject
@@ -36,12 +36,13 @@ public class BOMDao extends BaseDao<BOM> {
     public void lazyLoad(BOM entity) {
 
         // Lazy load of items
-        if (entity.getItems() != null) {
-            entity.getItems().size();
-            entity.getItems().stream().forEach((item) -> {
-                item.getParts().size();
-                item.getParts().stream().forEach((part) -> {
-                    part.getMaterial().setComponent(null);
+        if (entity.getItem() != null) {
+            entity.getItem().size();
+            entity.getItem().stream().forEach((item) -> {
+                item.getComponent().size();
+                item.getComponent().stream().forEach((component) -> {
+                    component.getMaterial().setComponent(null);
+                    component.setDelivery(null);
                 });
             });
         }
@@ -57,24 +58,24 @@ public class BOMDao extends BaseDao<BOM> {
         entity.setChecked(null);
         
         // Resolve dependencies
-        entity.getItems().stream().forEach((BOMItem item) -> {
+        entity.getItem().stream().forEach((Item item) -> {
             item.setBOM(entity);
-            item.getParts().stream().forEach((BOMItemPart part) -> {
-                part.setBOMItem(item);
-                part.setColor(entityManager.find(Color.class, part.getColor().getId()));
+            item.getComponent().stream().forEach((Component component) -> {
+                component.setItem(item);
+                component.setColor(entityManager.find(Color.class, component.getColor().getId()));
                 
-                Material material = entityManager.find(Material.class, part.getMaterial().getId());
+                Material material = entityManager.find(Material.class, component.getMaterial().getId());
                 
                 if (material == null) {
-                    br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(part.getMaterial().getCode());
+                    br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(component.getMaterial().getCode());
                     if (alias != null) {
                         material = alias.getMaterial();
                     } else {
-                        throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + part.getMaterial().getCode() + " " + part.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
+                        throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + component.getMaterial().getCode() + " " + component.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
                     }
                 }
                 
-                part.setMaterial(material);
+                component.setMaterial(material);
             });
         });
      }

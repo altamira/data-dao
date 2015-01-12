@@ -14,7 +14,6 @@ import br.com.altamira.data.model.measurement.Measure;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;

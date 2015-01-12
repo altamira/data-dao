@@ -20,7 +20,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless
+@Stateless(name = "common.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
 
     /**

@@ -38,6 +38,7 @@ public class ProduceDao extends ResourceDao<Produce> {
             Map<String, Measure> quantities = new HashMap<>();
             Formula formula = consume.getQuantity();
             Expression exp = new Expression(formula.getFormula());
+            
             exp.setVariables(variable);
             Measure quantity = new Measure();
             quantity.setValue(exp.eval());

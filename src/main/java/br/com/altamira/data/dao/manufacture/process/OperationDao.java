@@ -1,14 +1,20 @@
 package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.common.Material;
 
 import javax.ejb.Stateless;
 import br.com.altamira.data.model.manufacture.process.Operation;
-import javax.ejb.EJB;
+import br.com.altamira.data.model.measurement.Measure;
+import br.com.altamira.data.model.measurement.Variables;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -19,8 +25,14 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class OperationDao extends BaseDao<Operation> {
 
-    @EJB
-    private ProcessDao processDao;
+    private final Variables variable = new Variables();
+
+    /**
+     * @return the variable
+     */
+    public Variables getVariable() {
+        return variable;
+    }
 
     /**
      *
@@ -95,8 +107,7 @@ public class OperationDao extends BaseDao<Operation> {
     public CriteriaQuery<Operation> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class
-        );
+        CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class);
         Root<Operation> entity = criteriaQuery.from(Operation.class);
 
         criteriaQuery.select(cb.construct(Operation.class,
@@ -110,6 +121,84 @@ public class OperationDao extends BaseDao<Operation> {
         criteriaQuery.where(cb.equal(entity.get("process"), process.getId()));
 
         return criteriaQuery;
+    }
+
+    public MultivaluedHashMap<String, Material> calcule(Operation operation, Map<String, Measure> measurementParameters, @NotNull MultivaluedMap<String, String> requestParameters) {
+        MultivaluedHashMap<String, Material> results = new MultivaluedHashMap<>();
+
+        List<Material> produces = new ArrayList<>();
+        List<Material> consumes = new ArrayList<>();
+        List<Material> uses = new ArrayList<>();
+
+        measurementParameters.forEach((key, value) -> {
+            this.variable.put(key, value.getValue());
+        });
+
+        // calcule produces
+        operation.getProduce().forEach((produce) -> {
+            produce.getMaterial().calcule(this.variable);
+        });
+
+        // calcule consumes
+        operation.getConsume().forEach((consume) -> {
+            consume.getMaterial().calcule(this.variable);
+
+            // calcule quantity
+            /*Expression exp = new Expression(consume.getQuantity().getFormula());
+             exp.setVariables(variable);
+
+             Measure quantity = new Measure();
+
+             // resolve unknow variables
+             exp.getExpressionVariables().forEach((v) -> {
+             if (!variable.containsKey(v)) {
+             variable.replace(v, solveVariable(operation, measurementParameters, v));
+             }
+             });
+             exp.setVariables(variable);
+             quantity.setValue(exp.eval());
+             quantity.setUnit(consume.getQuantity().getUnit());*/
+            
+            consumes.add(consume.getMaterial());
+        });
+
+        // calcule uses
+        operation.getUse().forEach((use) -> {
+            uses.add(use.getMaterial());
+        });
+
+        measurementParameters.forEach((key, value) -> {
+            this.variable.put(key, value.getValue());
+        });
+
+        // recalcule produces
+        operation.getProduce().forEach((produce) -> {
+            produce.getMaterial().calcule(this.variable);
+
+            // calcule quantity
+            /*Expression exp = new Expression(produce.getQuantity().getFormula());
+             exp.setVariables(variable);
+
+             Measure quantity = new Measure();
+
+             // resolve unknow variables
+             exp.getExpressionVariables().forEach((v) -> {
+             if (!variable.containsKey(v)) {
+             variable.replace(v, solveVariable(operation, measurementParameters, v));
+             }
+             });
+             exp.setVariables(variable);
+             quantity.setValue(exp.eval());
+             quantity.setUnit(produce.getQuantity().getUnit());*/
+            
+            produces.add(produce.getMaterial());
+        });
+
+        results.put("produce", produces);
+        results.put("consume", consumes);
+        results.put("use", uses);
+
+        return results;
     }
 
 }

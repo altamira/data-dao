@@ -2,6 +2,7 @@ package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
+import br.com.altamira.data.model.manufacture.process.Operation;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -10,7 +11,11 @@ import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
 import br.com.altamira.data.model.manufacture.process.Process;
+import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Unit;
+import br.com.altamira.data.model.measurement.Variables;
+import java.util.Map;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -139,4 +144,11 @@ public class ProcessDao extends BaseDao<Process> {
         return criteriaQuery;
     }
 
+    public MultivaluedHashMap<String, Material> calcule(Process process, Map<String, Measure> measurementParameters, @NotNull MultivaluedMap<String, String> requestParameters) {
+        MultivaluedHashMap<String, Material> results = new MultivaluedHashMap<>();
+        
+        final Variables variable = new Variables();
+        
+        return results;
+    }
 }

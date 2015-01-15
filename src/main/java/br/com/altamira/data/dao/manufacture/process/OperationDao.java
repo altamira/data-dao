@@ -25,15 +25,6 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class OperationDao extends BaseDao<Operation> {
 
-    private final Variables variable = new Variables();
-
-    /**
-     * @return the variable
-     */
-    public Variables getVariable() {
-        return variable;
-    }
-
     /**
      *
      * @param entity
@@ -125,23 +116,25 @@ public class OperationDao extends BaseDao<Operation> {
 
     public MultivaluedHashMap<String, Material> calcule(Operation operation, Map<String, Measure> measurementParameters, @NotNull MultivaluedMap<String, String> requestParameters) {
         MultivaluedHashMap<String, Material> results = new MultivaluedHashMap<>();
-
+        
+        final Variables variable = new Variables();
+        
         List<Material> produces = new ArrayList<>();
         List<Material> consumes = new ArrayList<>();
         List<Material> uses = new ArrayList<>();
 
         measurementParameters.forEach((key, value) -> {
-            this.variable.put(key, value.getValue());
+            variable.put(key, value.getValue());
         });
 
         // calcule produces
         operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().calcule(this.variable);
+            produce.getMaterial().calcule(variable);
         });
 
         // calcule consumes
         operation.getConsume().forEach((consume) -> {
-            consume.getMaterial().calcule(this.variable);
+            consume.getMaterial().calcule(variable);
 
             // calcule quantity
             /*Expression exp = new Expression(consume.getQuantity().getFormula());
@@ -158,7 +151,6 @@ public class OperationDao extends BaseDao<Operation> {
              exp.setVariables(variable);
              quantity.setValue(exp.eval());
              quantity.setUnit(consume.getQuantity().getUnit());*/
-            
             consumes.add(consume.getMaterial());
         });
 
@@ -168,12 +160,12 @@ public class OperationDao extends BaseDao<Operation> {
         });
 
         measurementParameters.forEach((key, value) -> {
-            this.variable.put(key, value.getValue());
+            variable.put(key, value.getValue());
         });
 
         // recalcule produces
         operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().calcule(this.variable);
+            produce.getMaterial().calcule(variable);
 
             // calcule quantity
             /*Expression exp = new Expression(produce.getQuantity().getFormula());
@@ -190,7 +182,6 @@ public class OperationDao extends BaseDao<Operation> {
              exp.setVariables(variable);
              quantity.setValue(exp.eval());
              quantity.setUnit(produce.getQuantity().getUnit());*/
-            
             produces.add(produce.getMaterial());
         });
 

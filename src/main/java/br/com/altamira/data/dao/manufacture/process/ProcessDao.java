@@ -2,7 +2,6 @@ package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
-import br.com.altamira.data.model.manufacture.process.Operation;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;

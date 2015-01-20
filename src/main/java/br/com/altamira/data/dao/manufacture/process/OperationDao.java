@@ -7,7 +7,9 @@ import javax.ejb.Stateless;
 import br.com.altamira.data.model.manufacture.process.Operation;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Variables;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -123,18 +125,24 @@ public class OperationDao extends BaseDao<Operation> {
         List<Material> consumes = new ArrayList<>();
         List<Material> uses = new ArrayList<>();
 
+        // load parameter variables
         measurementParameters.forEach((key, value) -> {
             variable.put(key, value.getValue());
         });
 
+        // resolve unknow variables
+        operation.getProduce().forEach((produce) -> {
+            produce.getMaterial().setVariable(variable);
+        });
+        
         // calcule produces
         operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().calcule(variable);
+            produce.getMaterial().setVariable(variable);
         });
 
         // calcule consumes
         operation.getConsume().forEach((consume) -> {
-            consume.getMaterial().calcule(variable);
+            consume.getMaterial().setVariable(variable);
 
             // calcule quantity
             /*Expression exp = new Expression(consume.getQuantity().getFormula());
@@ -165,7 +173,7 @@ public class OperationDao extends BaseDao<Operation> {
 
         // recalcule produces
         operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().calcule(variable);
+            produce.getMaterial().setVariable(variable);
 
             // calcule quantity
             /*Expression exp = new Expression(produce.getQuantity().getFormula());

@@ -8,9 +8,12 @@ package br.com.altamira.data.dao.manufacture.bom;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.Component;
+import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
 import br.com.altamira.data.model.measurement.Unit;
+import java.util.ArrayList;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -24,6 +27,9 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "manufacture.bom.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
+
+    @Inject
+    private DeliveryDao deliveryDao;
 
     /**
      *
@@ -46,14 +52,25 @@ public class ComponentDao extends BaseDao<Component> {
     @Override
     public void resolveDependencies(Component entity, MultivaluedMap<String, String> parameters) {
         // Get reference from parent 
-        entity.setItem(entityManager.find(Item.class,
-                Long.parseLong(parameters.get("parentId").get(0))));
+        Item item = entityManager.find(Item.class, Long.parseLong(parameters.get("parentId").get(0)));
+        entity.setItem(item);
         entity.setMaterial(entityManager.find(Material.class, entity.getMaterial().getId()));
         entity.getQuantity().setUnit(entityManager.find(Unit.class, entity.getQuantity().getUnit().getId()));
         entity.getWidth().setUnit(entityManager.find(Unit.class, entity.getWidth().getUnit().getId()));
         entity.getHeight().setUnit(entityManager.find(Unit.class, entity.getHeight().getUnit().getId()));
         entity.getLength().setUnit(entityManager.find(Unit.class, entity.getLength().getUnit().getId()));
         entity.getWeight().setUnit(entityManager.find(Unit.class, entity.getWeight().getUnit().getId()));
+
+        // set default delivery date
+        deliveryDao.removeAll(entity.getDelivery());
+
+        Delivery delivery = new Delivery(entity, item.getBOM().getDelivery(), entity.getQuantity());
+
+        entity.setDelivery(new ArrayList<Delivery>() {
+            {
+                add(delivery);
+            }
+        });
     }
 
     /**

@@ -4,8 +4,9 @@ import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
+import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
-import br.com.altamira.data.model.manufacture.bom.Component;
+import java.util.ArrayList;
 
 import javax.ejb.Stateless;
 
@@ -27,6 +28,9 @@ public class BOMDao extends BaseDao<BOM> {
 
     @Inject
     private br.com.altamira.data.dao.common.MaterialAliasDao materialAliasDao;
+    
+    @Inject
+    private br.com.altamira.data.dao.manufacture.bom.DeliveryDao deliveryDao;
 
     /**
      *
@@ -60,7 +64,7 @@ public class BOMDao extends BaseDao<BOM> {
         // Resolve dependencies
         entity.getItem().stream().forEach((Item item) -> {
             item.setBOM(entity);
-            item.getComponent().stream().forEach((Component component) -> {
+            item.getComponent().stream().forEach((component) -> {
                 component.setItem(item);
                 component.setColor(entityManager.find(Color.class, component.getColor().getId()));
                 
@@ -76,6 +80,15 @@ public class BOMDao extends BaseDao<BOM> {
                 }
                 
                 component.setMaterial(material);
+
+                // set default delivery date
+                deliveryDao.removeAll(component.getDelivery());
+                
+                Delivery delivery = new Delivery(component, entity.getDelivery(), component.getQuantity());
+                
+                component.setDelivery(new ArrayList<Delivery>() {{
+                    add(delivery);
+                }});
             });
         });
      }

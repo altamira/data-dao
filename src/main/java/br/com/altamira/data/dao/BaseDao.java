@@ -253,7 +253,18 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entity = entityManager.contains(entity) ? entity : entityManager.merge(entity);
         entityManager.remove(entity);
     }
-
+    
+    /**
+     *
+     */
+    @Override
+    public void removeAll(List<T> entities) {
+        entities.forEach((entity) -> {
+            entityManager.remove(
+                    entityManager.contains(entity) ? entity : entityManager.merge(entity));
+        });
+    }
+    
     /**
      * <p>
      * Validates the given Member variable and throws validation exceptions

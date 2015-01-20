@@ -120,5 +120,14 @@ public interface Dao<T extends br.com.altamira.data.model.Entity> {
     public void remove(
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, IllegalArgumentException;
-
+    
+    /**
+     *
+     * @param entities
+     * @throws ConstraintViolationException
+     * @throws IllegalArgumentException
+     */
+    public void removeAll(
+            @NotNull List<T> entities)
+            throws ConstraintViolationException, IllegalArgumentException;
 }

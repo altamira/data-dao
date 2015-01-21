@@ -35,15 +35,7 @@ public class BOMDao extends BaseDao<BOM> {
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
 
         Root<BOM> bom = criteriaQuery.from(BOM.class);
-        Join<BOM, Item> item = bom.join(BOM_.item);
-        Join<Item, Component> component = item.join(Item_.component);
-        Join<Component, Delivery> delivery = component.join(Component_.delivery);
         
-        bom.fetch(BOM_.item);
-        //item.fetch(Item_.component);
-        //component.fetch(Component_.delivery);
-        //delivery.fetch(Delivery.class);
-
         criteriaQuery.select(bom);
 
         return criteriaQuery;

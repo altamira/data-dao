@@ -2,14 +2,16 @@ package br.com.altamira.data.dao.manufacture.process;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Material;
+import br.com.altamira.data.model.manufacture.process.Consume;
 
 import javax.ejb.Stateless;
 import br.com.altamira.data.model.manufacture.process.Operation;
+import br.com.altamira.data.model.manufacture.process.Produce;
+import br.com.altamira.data.model.manufacture.process.Use;
+import br.com.altamira.data.model.measurement.Expression.UnresolvedTokenException;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Variables;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -118,30 +120,38 @@ public class OperationDao extends BaseDao<Operation> {
 
     public MultivaluedHashMap<String, Material> calcule(Operation operation, Map<String, Measure> measurementParameters, @NotNull MultivaluedMap<String, String> requestParameters) {
         MultivaluedHashMap<String, Material> results = new MultivaluedHashMap<>();
-        
-        final Variables variable = new Variables();
-        
+
+        Variables variable = new Variables();
+
         List<Material> produces = new ArrayList<>();
         List<Material> consumes = new ArrayList<>();
         List<Material> uses = new ArrayList<>();
 
         // load parameter variables
-        measurementParameters.forEach((key, value) -> {
-            variable.put(key, value.getValue());
-        });
+        for (Map.Entry<String, Measure> entry : measurementParameters.entrySet()) {
+            System.out.println("Key : " + entry.getKey() + " Value : " + entry.getValue());
+            variable.put(entry.getKey(), entry.getValue().getValue());
+        }
 
         // resolve unknow variables
-        operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().setVariable(variable);
-        });
-        
+        for (Produce produce : operation.getProduce()) {
+            try {
+                produce.getMaterial().setVariable(variable);
+            } catch (UnresolvedTokenException tokenEx) {
+
+                for (String token : tokenEx.getTokens()) {
+                    variable = resolveToken(operation, token, variable);
+                };
+            }
+        };
+
         // calcule produces
-        operation.getProduce().forEach((produce) -> {
+        for (Produce produce : operation.getProduce()) {
             produce.getMaterial().setVariable(variable);
-        });
+        };
 
         // calcule consumes
-        operation.getConsume().forEach((consume) -> {
+        for (Consume consume : operation.getConsume()) {
             consume.getMaterial().setVariable(variable);
 
             // calcule quantity
@@ -160,38 +170,12 @@ public class OperationDao extends BaseDao<Operation> {
              quantity.setValue(exp.eval());
              quantity.setUnit(consume.getQuantity().getUnit());*/
             consumes.add(consume.getMaterial());
-        });
+        };
 
         // calcule uses
-        operation.getUse().forEach((use) -> {
+        for (Use use : operation.getUse()) {
             uses.add(use.getMaterial());
-        });
-
-        measurementParameters.forEach((key, value) -> {
-            variable.put(key, value.getValue());
-        });
-
-        // recalcule produces
-        operation.getProduce().forEach((produce) -> {
-            produce.getMaterial().setVariable(variable);
-
-            // calcule quantity
-            /*Expression exp = new Expression(produce.getQuantity().getFormula());
-             exp.setVariables(variable);
-
-             Measure quantity = new Measure();
-
-             // resolve unknow variables
-             exp.getExpressionVariables().forEach((v) -> {
-             if (!variable.containsKey(v)) {
-             variable.replace(v, solveVariable(operation, measurementParameters, v));
-             }
-             });
-             exp.setVariables(variable);
-             quantity.setValue(exp.eval());
-             quantity.setUnit(produce.getQuantity().getUnit());*/
-            produces.add(produce.getMaterial());
-        });
+        };
 
         results.put("produce", produces);
         results.put("consume", consumes);
@@ -200,4 +184,19 @@ public class OperationDao extends BaseDao<Operation> {
         return results;
     }
 
+    private Variables resolveToken(Operation operation, String token, Variables variable) {
+        // resolve unknow variables
+
+        for (Consume consume : operation.getConsume()) {
+            try {
+                variable = consume.getMaterial().setVariable(variable);
+            } catch (UnresolvedTokenException tokenEx) {
+                for (String t : tokenEx.getTokens()) {
+                    variable = resolveToken(operation, t, variable);
+                };
+            }
+        }
+
+        return variable;
+    }
 }

@@ -1,21 +1,9 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.model.shipping.planning.Component_;
-import br.com.altamira.data.model.shipping.planning.Delivery;
-import br.com.altamira.data.model.shipping.planning.Item;
 import br.com.altamira.data.model.shipping.planning.BOM;
-import br.com.altamira.data.model.shipping.planning.BOM_;
-import br.com.altamira.data.model.shipping.planning.Component;
-import br.com.altamira.data.model.shipping.planning.Item_;
 
 import javax.ejb.Stateless;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Root;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Sales bom persistency strategy
@@ -35,7 +23,9 @@ public class BOMDao extends BaseDao<BOM> {
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
 
         Root<BOM> bom = criteriaQuery.from(BOM.class);
-        
+
+        // TODO filter only remaining delivery dates
+    
         criteriaQuery.select(bom);
 
         return criteriaQuery;

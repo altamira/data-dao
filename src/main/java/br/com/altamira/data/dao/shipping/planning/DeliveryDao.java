@@ -22,7 +22,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
         return new Delivery();
     }
     
-    public List<Delivery> split(Delivery entity, List<Delivery> entities) {
+    public List<Delivery> divide(Delivery entity, List<Delivery> entities) {
         return new ArrayList<>();
     }
 }

@@ -2,6 +2,8 @@ package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.shipping.planning.BOM;
+import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Stateless;
 
@@ -50,4 +52,19 @@ public class BOMDao extends BaseDao<BOM> {
         }
     }
 
+    /**
+     * Replace the component delivery date with the new ones when the old date match
+     * @param delivery 
+     *              first one its the old date to be replaced
+     *              second ones its the new delivery date 
+     */
+    public void replaceDeliveryDates(long id, List<Date> delivery) {
+        
+        if (delivery.isEmpty() || delivery.size() != 2) {
+            throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date.");
+        }
+        
+        // TODO replace from old date to the new ones for matching old date = component delivery date
+    }
+    
 }

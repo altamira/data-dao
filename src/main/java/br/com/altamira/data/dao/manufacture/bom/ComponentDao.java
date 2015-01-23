@@ -11,7 +11,10 @@ import br.com.altamira.data.model.manufacture.bom.Component;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
 import br.com.altamira.data.model.measurement.Unit;
+
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -51,7 +54,9 @@ public class ComponentDao extends BaseDao<Component> {
      */
     @Override
     public void resolveDependencies(Component entity, MultivaluedMap<String, String> parameters) {
-        // Get reference from parent 
+    	boolean isUpdate = ( entity.getId() != null ) ? true : false;
+    	
+    	// Get reference from parent 
         Item item = entityManager.find(Item.class, Long.parseLong(parameters.get("parentId").get(0)));
         entity.setItem(item);
         entity.setMaterial(entityManager.find(Material.class, entity.getMaterial().getId()));
@@ -61,16 +66,34 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getLength().setUnit(entityManager.find(Unit.class, entity.getLength().getUnit().getId()));
         entity.getWeight().setUnit(entityManager.find(Unit.class, entity.getWeight().getUnit().getId()));
 
+        if(isUpdate)
+        {
+	        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+	        CriteriaQuery<Delivery> criteria = builder.createQuery(Delivery.class);
+	        Root<Delivery> root = criteria.from(Delivery.class);
+	        criteria.select(root);
+	        criteria.where(builder.equal(root.get("component").get("id"), entity.getId()));
+	        List<Delivery> deliveries = entityManager.createQuery(criteria).getResultList();
+	        
+	        // remove delivery dates
+	        entity.setDelivery(null);
+	        deliveryDao.removeAll(deliveries);
+	        
+	        entityManager.flush();
+        }
+
         // set default delivery date
-        deliveryDao.removeAll(entity.getDelivery());
-
-        Delivery delivery = new Delivery(entity, item.getBOM().getDelivery(), entity.getQuantity());
-
+        Delivery delivery = new Delivery(entity, entity.getItem().getBOM().getDelivery(), entity.getQuantity());
         entity.setDelivery(new ArrayList<Delivery>() {
             {
                 add(delivery);
             }
         });
+        
+        if(isUpdate)
+        {
+        	entityManager.persist(delivery);
+        }
     }
 
     /**

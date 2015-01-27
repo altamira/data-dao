@@ -12,6 +12,7 @@ import br.com.altamira.data.model.measurement.Expression.UnresolvedTokenExceptio
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Variables;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -122,6 +123,7 @@ public class OperationDao extends BaseDao<Operation> {
         MultivaluedHashMap<String, Material> results = new MultivaluedHashMap<>();
 
         Variables variable = new Variables();
+        Variables measure = new Variables();
 
         List<Material> produces = new ArrayList<>();
         List<Material> consumes = new ArrayList<>();

@@ -7,6 +7,7 @@ package br.com.altamira.data.dao.common;
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.common.MaterialBaseDao.CODE_VALIDATION;
+import br.com.altamira.data.model.common.MaterialAlias;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -15,6 +16,7 @@ import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  *
@@ -52,5 +54,32 @@ public class MaterialAliasDao extends BaseDao<br.com.altamira.data.model.common.
         }
 
         return material;
+    }
+    
+        /**
+     *
+     * @param parameters
+     * @return
+     */
+    @Override
+    public CriteriaQuery<MaterialAlias> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<MaterialAlias> criteriaQuery = cb.createQuery(getTypeClass());
+        Root<MaterialAlias> entity = criteriaQuery.from(getTypeClass());
+
+        criteriaQuery.select(entity);
+
+        if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()) {
+
+            String searchCriteria = "%" + parameters.get("search").get(0)
+                    .toLowerCase().trim() + "%";
+
+            criteriaQuery.where(cb.or(
+                    cb.like(cb.lower(entity.get("code")), searchCriteria),
+                    cb.like(cb.lower(entity.get("description")), searchCriteria)));
+        }
+
+        return criteriaQuery;
     }
 }

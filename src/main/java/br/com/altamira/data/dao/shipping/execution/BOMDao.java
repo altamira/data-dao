@@ -1,23 +1,13 @@
-package br.com.altamira.data.dao.shipping.planning;
+package br.com.altamira.data.dao.shipping.execution;
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Component;
-import br.com.altamira.data.model.shipping.execution.Delivered;
-import br.com.altamira.data.model.shipping.planning.BOM;
-import br.com.altamira.data.model.shipping.planning.Item;
-import java.math.BigDecimal;
+import br.com.altamira.data.model.shipping.execution.BOM;
 import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -27,34 +17,27 @@ import javax.ws.rs.core.MultivaluedMap;
  * Sales bom persistency strategy
  *
  */
-@Stateless(name = "shipping.planning.BOMDao")
+@Stateless(name = "shipping.execution.BOMDao")
 public class BOMDao extends BaseDao<BOM> {
-
-    @Inject
-    ComponentDao componentDao;
 
     /**
      *
      * @param parameters
      * @return
      */
-    @Override
-    public CriteriaQuery<BOM> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+    /*@Override
+     public CriteriaQuery<BOM> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+     CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
 
-        Root<BOM> bom = criteriaQuery.from(BOM.class);
-        Root<Item> item = criteriaQuery.from(Item.class);
-        Root<Component> component = criteriaQuery.from(Component.class);
+     Root<BOM> bom = criteriaQuery.from(BOM.class);
 
-        // select base entity
-        criteriaQuery.select(bom);
+     // TODO filter only remaining delivery dates
+    
+     criteriaQuery.select(bom);
 
-        criteriaQuery.where(cb.greaterThanOrEqualTo(component.get("quantity"), component.get("delivered")));
-
-        return criteriaQuery;
-    }
-
+     return criteriaQuery;
+     }*/
     /**
      *
      * @param entity
@@ -80,7 +63,7 @@ public class BOMDao extends BaseDao<BOM> {
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Create root Shipping Planning is not permitted.");
+        throw new UnsupportedOperationException("Create Shipping Execution is not permitted.");
     }
 
     @Override
@@ -89,7 +72,7 @@ public class BOMDao extends BaseDao<BOM> {
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Update root Shipping Planning is not permitted.");
+        throw new UnsupportedOperationException("Update Shipping Execution is not permitted.");
     }
 
     /**
@@ -103,7 +86,7 @@ public class BOMDao extends BaseDao<BOM> {
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete root Shipping Planning is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Item is not permitted.");
     }
 
     /**
@@ -117,7 +100,7 @@ public class BOMDao extends BaseDao<BOM> {
             @NotNull List<BOM> entities)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete root Shipping Planning is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution is not permitted.");
     }
 
     /**

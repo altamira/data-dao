@@ -28,7 +28,7 @@ public class BOMDao extends BaseDao<BOM> {
 
     @Inject
     private br.com.altamira.data.dao.common.MaterialAliasDao materialAliasDao;
-    
+
     @Inject
     private br.com.altamira.data.dao.manufacture.bom.DeliveryDao deliveryDao;
 
@@ -60,16 +60,16 @@ public class BOMDao extends BaseDao<BOM> {
     @Override
     public void resolveDependencies(BOM entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
         entity.setChecked(null);
-        
+
         // Resolve dependencies
         entity.getItem().stream().forEach((Item item) -> {
             item.setBOM(entity);
             item.getComponent().stream().forEach((component) -> {
                 component.setItem(item);
                 component.setColor(entityManager.find(Color.class, component.getColor().getId()));
-                
+
                 Material material = entityManager.find(Material.class, component.getMaterial().getId());
-                
+
                 if (material == null) {
                     br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(component.getMaterial().getCode());
                     if (alias != null) {
@@ -78,20 +78,24 @@ public class BOMDao extends BaseDao<BOM> {
                         throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + component.getMaterial().getCode() + " " + component.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
                     }
                 }
-                
+
                 component.setMaterial(material);
 
-                // set default delivery date
-                deliveryDao.removeAll(component.getDelivery());
-                
+                if (entity.getId() == null) {
+                    // set default delivery date
+                    deliveryDao.removeAll(component.getDelivery());
+                }
+
                 Delivery delivery = new Delivery(component, entity.getDelivery(), component.getQuantity());
-                
-                component.setDelivery(new ArrayList<Delivery>() {{
-                    add(delivery);
-                }});
+
+                component.setDelivery(new ArrayList<Delivery>() {
+                    {
+                        add(delivery);
+                    }
+                });
             });
         });
-     }
+    }
 
     /**
      *

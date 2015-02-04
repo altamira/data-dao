@@ -13,7 +13,7 @@ import javax.ejb.Stateless;
  *
  * @author Alessandro
  */
-@Stateless(name = "sales.Component")
+@Stateless(name = "sales.component.ComponentDao")
 public class ComponentDao extends MaterialBaseDao<Component> {
     
 }

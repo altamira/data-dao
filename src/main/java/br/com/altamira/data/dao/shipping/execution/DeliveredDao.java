@@ -3,18 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.planning;
+package br.com.altamira.data.dao.shipping.execution;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Measure;
+import br.com.altamira.data.model.shipping.execution.Component;
 import br.com.altamira.data.model.shipping.execution.Delivered;
-import br.com.altamira.data.model.shipping.planning.Component;
-import br.com.altamira.data.model.shipping.planning.Delivery;
-
+import br.com.altamira.data.model.shipping.execution.Delivery;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.Stateless;
@@ -29,39 +26,25 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.planning.DeliveryDao")
-public class DeliveryDao extends BaseDao<Delivery> {
-    
+@Stateless
+public class DeliveredDao extends BaseDao<Delivered> {
+
     @Inject
     ComponentDao componentDao;
-            
+    
+    @Inject 
+    DeliveryDao deliveryDao;
+    
     /**
      *
      * @param entity
      * @param parameters
      */
     @Override
-    public void resolveDependencies(Delivery entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
-        
-    }
-    /**
-     *
-     * @param entity
-     * @param parameters
-     */
-    @Override
-    public void updateDependencies(Delivery entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+    public void updateDependencies(Delivered entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
         calculateRemainingAndDelivered(entity.getComponent());
     }
 
-    public Delivery join(List<Delivery> entities) {
-        return new Delivery();
-    }
-    
-    public List<Delivery> divide(Delivery entity, List<Delivery> entities) {
-        return new ArrayList<>();
-    }
-    
     /**
      *
      * @param entity

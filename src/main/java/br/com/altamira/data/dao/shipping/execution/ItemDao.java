@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.planning;
+package br.com.altamira.data.dao.shipping.execution;
 
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.planning.Item;
+import br.com.altamira.data.model.shipping.execution.Item;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -24,7 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.planning.ItemDao")
+@Stateless(name = "shipping.execution.ItemDao")
 public class ItemDao extends BaseDao<Item> {
 
     @Inject 
@@ -53,7 +53,7 @@ public class ItemDao extends BaseDao<Item> {
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Create Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Create Shipping Execution Item is not permitted.");
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ItemDao extends BaseDao<Item> {
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Update Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Update Shipping Execution Item is not permitted.");
     }
 
     /**
@@ -76,7 +76,7 @@ public class ItemDao extends BaseDao<Item> {
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Item is not permitted.");
     }
 
     /**
@@ -90,6 +90,7 @@ public class ItemDao extends BaseDao<Item> {
             @NotNull List<Item> entities)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Item is not permitted.");
     }
+
 }

@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.planning;
+package br.com.altamira.data.dao.shipping.execution;
 
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.planning.Item;
+import br.com.altamira.data.model.shipping.execution.Component;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -24,45 +24,41 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.planning.ItemDao")
-public class ItemDao extends BaseDao<Item> {
-
-    @Inject 
-    ComponentDao componentDao;
+@Stateless(name = "shipping.execution.ComponentDao")
+public class ComponentDao extends BaseDao<Component> {
+    
+    @Inject
+    DeliveryDao deliveryDao;
     
     /**
      *
      * @param entity
      */
     @Override
-    public void lazyLoad(Item entity) {
+    public void lazyLoad(Component entity) {
         // Lazy load of items
-        if (entity.getComponent() != null) {
-            entity.getComponent().size();
-            entity.getComponent().stream().forEach((component) -> {
-                if (component.getMaterial() != null) {
-                    component.getMaterial().setComponent(null);
-                }
-            });
+        if (entity.getMaterial() != null) {
+            entity.getMaterial().setComponent(null);
         }
+
     }
     
     @Override
-    public Item create(
-            @NotNull(message = ENTITY_VALIDATION) Item entity,
+    public Component create(
+            @NotNull(message = ENTITY_VALIDATION) Component entity,
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Create Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Create Shipping Execution Component is not permitted.");
     }
 
     @Override
-    public Item update(
-            @NotNull(message = ENTITY_VALIDATION) Item entity,
+    public Component update(
+            @NotNull(message = ENTITY_VALIDATION) Component entity,
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Update Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Update Shipping Execution Component is not permitted.");
     }
 
     /**
@@ -76,7 +72,7 @@ public class ItemDao extends BaseDao<Item> {
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Component is not permitted.");
     }
 
     /**
@@ -87,9 +83,10 @@ public class ItemDao extends BaseDao<Item> {
      */
     @Override
     public void removeAll(
-            @NotNull List<Item> entities)
+            @NotNull List<Component> entities)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Planning Item is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Component is not permitted.");
     }
+
 }

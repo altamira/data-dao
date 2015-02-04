@@ -10,7 +10,10 @@ import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.Component;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
+import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Unit;
+import br.com.altamira.data.model.shipping.execution.Delivered;
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
@@ -54,9 +58,7 @@ public class ComponentDao extends BaseDao<Component> {
      */
     @Override
     public void resolveDependencies(Component entity, MultivaluedMap<String, String> parameters) {
-    	boolean isUpdate = ( entity.getId() != null ) ? true : false;
-    	
-    	// Get reference from parent 
+        // Get reference from parent 
         Item item = entityManager.find(Item.class, Long.parseLong(parameters.get("parentId").get(0)));
         entity.setItem(item);
         entity.setMaterial(entityManager.find(Material.class, entity.getMaterial().getId()));
@@ -66,20 +68,32 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getLength().setUnit(entityManager.find(Unit.class, entity.getLength().getUnit().getId()));
         entity.getWeight().setUnit(entityManager.find(Unit.class, entity.getWeight().getUnit().getId()));
 
-        if(isUpdate)
-        {
-	        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-	        CriteriaQuery<Delivery> criteria = builder.createQuery(Delivery.class);
-	        Root<Delivery> root = criteria.from(Delivery.class);
-	        criteria.select(root);
-	        criteria.where(builder.equal(root.get("component").get("id"), entity.getId()));
-	        List<Delivery> deliveries = entityManager.createQuery(criteria).getResultList();
-	        
-	        // remove delivery dates
-	        entity.setDelivery(null);
-	        deliveryDao.removeAll(deliveries);
-	        
-	        entityManager.flush();
+        if (entity.getId() != null) {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
+            Root<Delivered> root = criteria.from(Delivered.class);
+            Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
+            criteria.select(sum);
+            criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
+
+            Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
+                    entity.getQuantity().getUnit());
+
+            entity.setDelivered(delivered);
+            entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
+            
+            /*CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<Delivery> criteria = builder.createQuery(Delivery.class);
+            Root<Delivery> root = criteria.from(Delivery.class);
+            criteria.select(root);
+            criteria.where(builder.equal(root.get("component").get("id"), entity.getId()));
+            List<Delivery> deliveries = entityManager.createQuery(criteria).getResultList();*/
+
+            // remove delivery dates
+            deliveryDao.removeAll(entity.getDelivery());
+            entity.setDelivery(null);
+
+            entityManager.flush();
         }
 
         // set default delivery date
@@ -89,10 +103,9 @@ public class ComponentDao extends BaseDao<Component> {
                 add(delivery);
             }
         });
-        
-        if(isUpdate)
-        {
-        	entityManager.persist(delivery);
+
+        if (entity.getId() != null) {
+            entityManager.persist(delivery);
         }
     }
 

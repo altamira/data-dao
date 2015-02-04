@@ -81,6 +81,15 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     
     /**
      *
+     * @param entity
+     * @param parameters
+     */
+    public void updateDependencies(T entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+
+    }
+    
+    /**
+     *
      * @param parameters
      * @return
      */
@@ -187,6 +196,8 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entityManager.persist(entity);
         entityManager.flush();
 
+        this.updateDependencies(entity, parameters);
+        
         entity = entityManager.find(getTypeClass(), entity.getId());
 
         this.lazyLoad(entity);
@@ -227,6 +238,8 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entity = entityManager.merge(entity);
         entityManager.flush();
         
+        this.updateDependencies(entity, parameters);
+        
         entity = entityManager.find(getTypeClass(), entity.getId());
 
         this.lazyLoad(entity);
@@ -258,7 +271,10 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      *
      */
     @Override
-    public void removeAll(List<T> entities) {
+    public void removeAll(
+            @NotNull List<T> entities) 
+            throws ConstraintViolationException, IllegalArgumentException{
+        
         entities.forEach((entity) -> {
             entityManager.remove(
                     entityManager.contains(entity) ? entity : entityManager.merge(entity));

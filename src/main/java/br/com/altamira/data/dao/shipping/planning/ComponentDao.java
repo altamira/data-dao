@@ -7,23 +7,29 @@ package br.com.altamira.data.dao.shipping.planning;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import br.com.altamira.data.dao.BaseDao;
+import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
+import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import br.com.altamira.data.model.measurement.Measure;
-import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
+import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.Component;
 import br.com.altamira.data.model.shipping.planning.Delivery;
+import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolationException;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  *
@@ -32,6 +38,9 @@ import javax.persistence.criteria.Root;
  */
 @Stateless(name = "shipping.planning.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
+
+    @Inject
+    DeliveryDao deliveryDao;
 
     /**
      *
@@ -43,44 +52,53 @@ public class ComponentDao extends BaseDao<Component> {
         if (entity.getMaterial() != null) {
             entity.getMaterial().setComponent(null);
         }
-        
-        /* ALTAMIRA-22: Shipping Planning - amount remaining calculation */
-        
-        // Retrieve the amount of delivered item quantities
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    	CriteriaQuery<BigDecimal> criteria = builder.createQuery(BigDecimal.class);
-    	Root<Delivered> root = criteria.from(Delivered.class);
-    	Expression<BigDecimal> sum = builder.sum(root.get("quantity").get("value"));
-    	criteria.select(sum);
-    	criteria.where(builder.equal(root.get("component").get("id"), entity.getId()));
-    	BigDecimal amt_delivered = entityManager.createQuery(criteria).getSingleResult();
-    	amt_delivered = (amt_delivered==null) ? BigDecimal.ZERO : amt_delivered;
 
-    	Unit unitEntity = entity.getQuantity().getUnit();
-
-    	Measure measureEntity = new Measure();
-    	measureEntity.setValue(amt_delivered);
-    	measureEntity.setUnit(unitEntity);
-    	entity.setDelivered(measureEntity);
-
-    	Set<Delivery> deliverySet = entity.getDelivery();
-    	TreeSet<Delivery> treeSet = new TreeSet<Delivery>(deliverySet);
-    	Iterator<Delivery> iterator = treeSet.iterator();
-    	
-    	while( amt_delivered.compareTo(BigDecimal.ZERO)>0 && iterator.hasNext() )
-    	{
-    		Delivery delivery = iterator.next();
-    		
-    		BigDecimal quantityDelivery = delivery.getQuantity().getValue();
-    		Measure measure = new Measure();
-    		measure.setValue(quantityDelivery.min(amt_delivered));
-    		measure.setUnit(unitEntity);
-    		delivery.setDelivered(measure);
-    		
-    		amt_delivered = amt_delivered.subtract(quantityDelivery.min(amt_delivered));
-    	}
-    	
-    	entity.setDelivery(treeSet);
-    	
     }
+    
+    @Override
+    public Component create(
+            @NotNull(message = ENTITY_VALIDATION) Component entity,
+            MultivaluedMap<String, String> parameters)
+            throws ConstraintViolationException, IllegalArgumentException {
+
+        throw new UnsupportedOperationException("Create Shipping Planning Component is not permitted.");
+    }
+
+    @Override
+    public Component update(
+            @NotNull(message = ENTITY_VALIDATION) Component entity,
+            MultivaluedMap<String, String> parameters)
+            throws ConstraintViolationException, IllegalArgumentException {
+
+        throw new UnsupportedOperationException("Update Shipping Planning Component is not permitted.");
+    }
+
+    /**
+     *
+     * @param id
+     * @throws ConstraintViolationException
+     * @throws IllegalArgumentException
+     */
+    @Override
+    public void remove(
+            @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
+            throws ConstraintViolationException, IllegalArgumentException {
+
+        throw new UnsupportedOperationException("Delete Shipping Planning Component is not permitted.");
+    }
+
+    /**
+     *
+     * @param entities
+     * @throws ConstraintViolationException
+     * @throws IllegalArgumentException
+     */
+    @Override
+    public void removeAll(
+            @NotNull List<Component> entities)
+            throws ConstraintViolationException, IllegalArgumentException {
+
+        throw new UnsupportedOperationException("Delete Shipping Planning Component is not permitted.");
+    }
+
 }

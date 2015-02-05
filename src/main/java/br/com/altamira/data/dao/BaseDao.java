@@ -16,6 +16,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -122,7 +123,12 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
 
         CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(parameters);
 
-        return entityManager.createQuery(criteriaQuery)
+        TypedQuery<T> query = entityManager.createQuery(criteriaQuery);
+        
+        // TODO debug sql string
+        //log.log(Level.INFO, query.unwrap(org.hibernate.Query.class).getQueryString());
+        
+        return query
                 .setFirstResult(startPage * pageSize)
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();

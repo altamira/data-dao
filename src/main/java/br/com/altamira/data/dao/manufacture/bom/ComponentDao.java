@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.Component;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
@@ -61,7 +62,14 @@ public class ComponentDao extends BaseDao<Component> {
         // Get reference from parent 
         Item item = entityManager.find(Item.class, Long.parseLong(parameters.get("parentId").get(0)));
         entity.setItem(item);
+        
+        // resolve color
+        entity.setColor(entityManager.find(Color.class, entity.getColor().getId()));
+        
+        // resolve material
         entity.setMaterial(entityManager.find(Material.class, entity.getMaterial().getId()));
+        
+        // resolve measurements
         entity.getQuantity().setUnit(entityManager.find(Unit.class, entity.getQuantity().getUnit().getId()));
         entity.getWidth().setUnit(entityManager.find(Unit.class, entity.getWidth().getUnit().getId()));
         entity.getHeight().setUnit(entityManager.find(Unit.class, entity.getHeight().getUnit().getId()));
@@ -70,6 +78,7 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getDelivered().setUnit(entity.getQuantity().getUnit());
         entity.getRemaining().setUnit(entity.getQuantity().getUnit());
 
+        // reset delivery date
         if (entity.getId() != null) {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
@@ -82,7 +91,6 @@ public class ComponentDao extends BaseDao<Component> {
                     entity.getQuantity().getUnit());
 
             entity.setDelivered(delivered);
-            entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
             
             CriteriaQuery<Delivery> criteriaQuery = cb.createQuery(Delivery.class);
             Root<Delivery> delivery = criteriaQuery.from(Delivery.class);
@@ -96,6 +104,7 @@ public class ComponentDao extends BaseDao<Component> {
 
             entityManager.flush();
         }
+        entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
 
         // set default delivery date
         Delivery delivery = new Delivery(entity, entity.getItem().getBOM().getDelivery(), entity.getQuantity());

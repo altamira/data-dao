@@ -6,14 +6,20 @@ import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
+import br.com.altamira.data.model.measurement.Measure;
+import br.com.altamira.data.model.measurement.Unit;
+import br.com.altamira.data.model.shipping.execution.Delivered;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import javax.ejb.Stateless;
 
 import java.util.Date;
+import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -25,6 +31,9 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "manufacture.bom.BOMDao")
 public class BOMDao extends BaseDao<BOM> {
+
+    @Inject
+    private br.com.altamira.data.dao.common.MaterialDao materialDao;
 
     @Inject
     private br.com.altamira.data.dao.common.MaterialAliasDao materialAliasDao;
@@ -65,10 +74,22 @@ public class BOMDao extends BaseDao<BOM> {
         entity.getItem().stream().forEach((Item item) -> {
             item.setBOM(entity);
             item.getComponent().stream().forEach((component) -> {
+                // get reference from parent
                 component.setItem(item);
+                
+                // resolve color
                 component.setColor(entityManager.find(Color.class, component.getColor().getId()));
 
-                Material material = entityManager.find(Material.class, component.getMaterial().getId());
+                // resolve material
+                Material material = null;
+
+                // resolve material
+                if (component.getMaterial().getId() == null
+                        || component.getMaterial().getId() == 0) {
+                    material = materialDao.find(component.getMaterial().getCode());
+                } else {
+                    material = materialDao.find(component.getMaterial().getId());
+                }
 
                 if (material == null) {
                     br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(component.getMaterial().getCode());
@@ -81,18 +102,56 @@ public class BOMDao extends BaseDao<BOM> {
 
                 component.setMaterial(material);
 
-                if (entity.getId() == null) {
-                    // set default delivery date
-                    deliveryDao.removeAll(component.getDelivery());
+                // resolve measurements
+                component.getQuantity().setUnit(entityManager.find(Unit.class, component.getQuantity().getUnit().getId()));
+                component.getWidth().setUnit(entityManager.find(Unit.class, component.getWidth().getUnit().getId()));
+                component.getHeight().setUnit(entityManager.find(Unit.class, component.getHeight().getUnit().getId()));
+                component.getLength().setUnit(entityManager.find(Unit.class, component.getLength().getUnit().getId()));
+                component.getWeight().setUnit(entityManager.find(Unit.class, component.getWeight().getUnit().getId()));
+                component.getDelivered().setUnit(component.getQuantity().getUnit());
+                component.getRemaining().setUnit(component.getQuantity().getUnit());
+
+                // reset delivery dates
+                if (entity.getId() != null) {
+                    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+                    CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
+                    Root<Delivered> root = criteria.from(Delivered.class);
+                    Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
+                    criteria.select(sum);
+                    criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
+
+                    Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
+                            component.getQuantity().getUnit());
+
+                    component.setDelivered(delivered);
+
+                    CriteriaQuery<Delivery> criteriaQuery = cb.createQuery(Delivery.class);
+                    Root<Delivery> delivery = criteriaQuery.from(Delivery.class);
+                    criteriaQuery.select(delivery);
+                    criteriaQuery.where(cb.equal(delivery.get("component").get("id"), entity.getId()));
+                    List<Delivery> deliveries = entityManager.createQuery(criteriaQuery).getResultList();
+
+                    // remove delivery dates
+                    entity.setDelivery(null);
+                    deliveryDao.removeAll(deliveries);
+
+                    entityManager.flush();
                 }
+                component.setRemaining(component.getQuantity().subtract(component.getDelivered()));
 
-                Delivery delivery = new Delivery(component, entity.getDelivery(), component.getQuantity());
-
+                // set default delivery date
+                Delivery delivery = new Delivery(component, component.getItem().getBOM().getDelivery(), component.getQuantity());
+                delivery.setDelivered(component.getDelivered());
+                delivery.setRemaining(component.getQuantity().subtract(component.getDelivered()));
                 component.setDelivery(new ArrayList<Delivery>() {
                     {
                         add(delivery);
                     }
                 });
+
+                if (entity.getId() != null) {
+                    entityManager.persist(delivery);
+                }
             });
         });
     }

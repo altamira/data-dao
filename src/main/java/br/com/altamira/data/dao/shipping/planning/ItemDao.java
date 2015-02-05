@@ -14,6 +14,9 @@ import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -46,6 +49,26 @@ public class ItemDao extends BaseDao<Item> {
             });
         }
     }
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    @Override
+    public CriteriaQuery<Item> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Item> criteriaQuery = cb.createQuery(Item.class);
+        Root<Item> entity = criteriaQuery.from(Item.class);
+
+        criteriaQuery.select(entity);
+
+        criteriaQuery.where(cb.equal(entity.get("bom"),
+                Long.parseLong(parameters.get("parentId").get(0))));
+
+        return criteriaQuery;
+    }    
     
     @Override
     public Item create(

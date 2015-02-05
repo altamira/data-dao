@@ -23,6 +23,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -31,9 +32,6 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "shipping.planning.DeliveryDao")
 public class DeliveryDao extends BaseDao<Delivery> {
-    
-    @Inject
-    ComponentDao componentDao;
             
     /**
      *
@@ -54,6 +52,26 @@ public class DeliveryDao extends BaseDao<Delivery> {
         calculateRemainingAndDelivered(entity.getComponent());
     }
 
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    @Override
+    public CriteriaQuery<Delivery> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Delivery> criteriaQuery = cb.createQuery(Delivery.class);
+        Root<Delivery> entity = criteriaQuery.from(Delivery.class);
+
+        criteriaQuery.select(entity);
+
+        criteriaQuery.where(cb.equal(entity.get("component"),
+                Long.parseLong(parameters.get("parentId").get(0))));
+
+        return criteriaQuery;
+    }
+    
     public Delivery join(List<Delivery> entities) {
         return new Delivery();
     }

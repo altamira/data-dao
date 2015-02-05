@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -29,11 +30,25 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class DeliveredDao extends BaseDao<Delivered> {
 
-    @Inject
-    ComponentDao componentDao;
-    
-    @Inject 
-    DeliveryDao deliveryDao;
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    @Override
+    public CriteriaQuery<Delivered> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Delivered> criteriaQuery = cb.createQuery(Delivered.class);
+        Root<Delivered> entity = criteriaQuery.from(Delivered.class);
+
+        criteriaQuery.select(entity);
+
+        criteriaQuery.where(cb.equal(entity.get("component"),
+                Long.parseLong(parameters.get("parentId").get(0))));
+
+        return criteriaQuery;
+    }
     
     /**
      *
@@ -67,6 +82,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
         entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
         
         entityManager.persist(entity);
+        entityManager.flush();
 
         Set<Delivery> deliverySet = entity.getDelivery();
         TreeSet<Delivery> treeSet = new TreeSet<>(deliverySet);
@@ -79,6 +95,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
             delivery.setRemaining(delivery.getQuantity().subtract(delivery.getDelivered()));
 
             entityManager.persist(delivery);
+            entityManager.flush();
             
             delivered.subtract(delivery.getQuantity().min(delivered));
         }

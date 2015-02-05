@@ -5,26 +5,17 @@
  */
 package br.com.altamira.data.dao.shipping.planning;
 
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.measurement.Measure;
-import br.com.altamira.data.model.shipping.execution.Delivered;
-import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.Component;
-import br.com.altamira.data.model.shipping.planning.Delivery;
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
@@ -39,9 +30,6 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless(name = "shipping.planning.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
 
-    @Inject
-    DeliveryDao deliveryDao;
-
     /**
      *
      * @param entity
@@ -53,6 +41,26 @@ public class ComponentDao extends BaseDao<Component> {
             entity.getMaterial().setComponent(null);
         }
 
+    }
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    @Override
+    public CriteriaQuery<Component> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Component> criteriaQuery = cb.createQuery(Component.class);
+        Root<Component> entity = criteriaQuery.from(Component.class);
+
+        criteriaQuery.select(entity);
+
+        criteriaQuery.where(cb.equal(entity.get("item"),
+                Long.parseLong(parameters.get("parentId").get(0))));
+
+        return criteriaQuery;
     }
     
     @Override

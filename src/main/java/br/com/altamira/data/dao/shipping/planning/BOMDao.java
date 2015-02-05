@@ -3,11 +3,9 @@ package br.com.altamira.data.dao.shipping.planning;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Component;
-import br.com.altamira.data.model.shipping.execution.Delivered;
+import br.com.altamira.data.model.shipping.planning.Component;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.Item;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -15,9 +13,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -48,9 +44,9 @@ public class BOMDao extends BaseDao<BOM> {
         Root<Component> component = criteriaQuery.from(Component.class);
 
         // select base entity
-        criteriaQuery.select(bom);
+        criteriaQuery.select(bom).distinct(true);
 
-        criteriaQuery.where(cb.greaterThanOrEqualTo(component.get("quantity"), component.get("delivered")));
+        criteriaQuery.where(cb.gt(component.get("quantity"), component.get("delivered")));
 
         return criteriaQuery;
     }

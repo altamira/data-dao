@@ -67,6 +67,8 @@ public class ComponentDao extends BaseDao<Component> {
         entity.getHeight().setUnit(entityManager.find(Unit.class, entity.getHeight().getUnit().getId()));
         entity.getLength().setUnit(entityManager.find(Unit.class, entity.getLength().getUnit().getId()));
         entity.getWeight().setUnit(entityManager.find(Unit.class, entity.getWeight().getUnit().getId()));
+        entity.getDelivered().setUnit(entity.getQuantity().getUnit());
+        entity.getRemaining().setUnit(entity.getQuantity().getUnit());
 
         if (entity.getId() != null) {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -82,22 +84,23 @@ public class ComponentDao extends BaseDao<Component> {
             entity.setDelivered(delivered);
             entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
             
-            /*CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<Delivery> criteria = builder.createQuery(Delivery.class);
-            Root<Delivery> root = criteria.from(Delivery.class);
-            criteria.select(root);
-            criteria.where(builder.equal(root.get("component").get("id"), entity.getId()));
-            List<Delivery> deliveries = entityManager.createQuery(criteria).getResultList();*/
+            CriteriaQuery<Delivery> criteriaQuery = cb.createQuery(Delivery.class);
+            Root<Delivery> delivery = criteriaQuery.from(Delivery.class);
+            criteriaQuery.select(delivery);
+            criteriaQuery.where(cb.equal(delivery.get("component").get("id"), entity.getId()));
+            List<Delivery> deliveries = entityManager.createQuery(criteriaQuery).getResultList();
 
             // remove delivery dates
-            deliveryDao.removeAll(entity.getDelivery());
             entity.setDelivery(null);
+            deliveryDao.removeAll(deliveries);
 
             entityManager.flush();
         }
 
         // set default delivery date
         Delivery delivery = new Delivery(entity, entity.getItem().getBOM().getDelivery(), entity.getQuantity());
+        delivery.setDelivered(entity.getDelivered());
+        delivery.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
         entity.setDelivery(new ArrayList<Delivery>() {
             {
                 add(delivery);

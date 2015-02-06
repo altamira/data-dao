@@ -1,8 +1,6 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
-import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
-import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import br.com.altamira.data.model.shipping.planning.Component;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.Item;
@@ -13,7 +11,10 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.SetJoin;
+import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -36,19 +37,27 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+    	
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    	
+    	CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+    	Root<BOM> bom = criteriaQuery.from(BOM.class);
+    	Fetch<BOM, Item> fetch = bom.fetch("item");
+    	SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) fetch;
 
-        Root<BOM> bom = criteriaQuery.from(BOM.class);
-        Root<Item> item = criteriaQuery.from(Item.class);
-        Root<Component> component = criteriaQuery.from(Component.class);
+    	Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
+    	Root<Component> component = subQuery.from(Component.class);
+    	subQuery.select(item.get("id"));
+    	subQuery.where(cb.equal(component.get("item").get("id"),item.get("id")));
 
-        // select base entity
-        criteriaQuery.select(bom).distinct(true);
+    	subQuery.groupBy(component.get("item").get("id"));
+    	subQuery.having( cb.gt( cb.sum(component.get("quantity").get("value")), cb.sum(component.get("delivered").get("value")) ) );
 
-        criteriaQuery.where(cb.gt(component.get("quantity"), component.get("delivered")));
-
-        return criteriaQuery;
+    	criteriaQuery.select(bom);
+    	criteriaQuery.where(cb.equal(item.get("id"), subQuery));
+    	criteriaQuery.orderBy(cb.asc(bom.get("id")),cb.asc(item.get("id")));
+    	
+    	return criteriaQuery;
     }
 
     /**

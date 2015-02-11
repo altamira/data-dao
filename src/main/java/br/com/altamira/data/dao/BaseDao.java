@@ -11,10 +11,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
 
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -245,6 +246,10 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entityManager.flush();
         
         this.updateDependencies(entity, parameters);
+
+        /* ALTAMIRA-57: Shipping Planning - multiple PUT request error */
+        // Refresh parent entity before find
+        entityManager.refresh(entity.getParent());
         
         entity = entityManager.find(getTypeClass(), entity.getId());
 

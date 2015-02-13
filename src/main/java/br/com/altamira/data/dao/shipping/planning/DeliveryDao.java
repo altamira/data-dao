@@ -7,6 +7,7 @@ package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Measure;
+import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
 import br.com.altamira.data.model.shipping.planning.Component;
 import br.com.altamira.data.model.shipping.planning.Delivery;
@@ -17,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -41,6 +43,12 @@ public class DeliveryDao extends BaseDao<Delivery> {
     @Override
     public void resolveDependencies(Delivery entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
         
+    	/* ALTAMIRA-66: create delivery date not working */
+    	// units for quantity, delivered and remaining needs to set before persist 
+    	Unit quantityUnit = entityManager.find(Unit.class, entity.getQuantity().getUnit().getId());
+    	entity.getQuantity().setUnit(quantityUnit);
+    	entity.getDelivered().setUnit(quantityUnit);
+    	entity.getRemaining().setUnit(quantityUnit);
     }
     /**
      *

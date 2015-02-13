@@ -246,10 +246,6 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entityManager.flush();
         
         this.updateDependencies(entity, parameters);
-
-        /* ALTAMIRA-57: Shipping Planning - multiple PUT request error */
-        // Refresh parent entity before find
-        entityManager.refresh(entity.getParent());
         
         entity = entityManager.find(getTypeClass(), entity.getId());
 

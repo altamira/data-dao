@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao.purchase;
 
 import br.com.altamira.data.dao.common.MaterialBaseDao;
+import br.com.altamira.data.model.purchase.Steel;
 
 import javax.ejb.Stateless;
 
@@ -13,7 +14,7 @@ import javax.ejb.Stateless;
  *
  * @author Alessandro
  */
-@Stateless(name = "purchase.MaterialDao")
-public class MaterialDao extends MaterialBaseDao<br.com.altamira.data.model.purchase.Material> {
+@Stateless(name = "purchase.SteelDao")
+public class SteelDao extends MaterialBaseDao<Steel> {
     
 }

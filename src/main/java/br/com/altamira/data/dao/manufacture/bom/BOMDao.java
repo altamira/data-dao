@@ -47,10 +47,13 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public void lazyLoad(BOM entity) {
-
         // Lazy load of items
         if (entity.getItem() != null) {
             entity.getItem().size();
+            
+            //ALTAMIRA-76: hides ITEM 0 from materials list 
+            entity.getItem().removeIf(p -> p.getItem() == 0);
+            
             entity.getItem().stream().forEach((item) -> {
                 item.getComponent().size();
                 item.getComponent().stream().forEach((component) -> {
@@ -76,7 +79,7 @@ public class BOMDao extends BaseDao<BOM> {
             item.getComponent().stream().forEach((component) -> {
                 // get reference from parent
                 component.setItem(item);
-                
+
                 // resolve color
                 component.setColor(entityManager.find(Color.class, component.getColor().getId()));
 
@@ -95,9 +98,37 @@ public class BOMDao extends BaseDao<BOM> {
                     br.com.altamira.data.model.common.MaterialAlias alias = materialAliasDao.find(component.getMaterial().getCode());
                     if (alias != null) {
                         material = alias.getMaterial();
-                    } else {
-                        throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + component.getMaterial().getCode() + " " + component.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
                     }
+                }
+
+                // if not found, create
+                if (material == null) {
+                    if (item.getItem() == 0) {
+                        switch (component.getMaterial().getCode().substring(0, 3).toUpperCase()) {
+                            case "ALP":
+                                material = new br.com.altamira.data.model.purchase.Steel(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                            case "TPO":
+                                material = new br.com.altamira.data.model.purchase.Ink(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                            default:
+                                material = new br.com.altamira.data.model.purchase.Inputs(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                        }
+                    } else {
+                        switch (component.getMaterial().getCode().substring(0, 3).toUpperCase()) {
+                            case "ALP":
+                                material = new br.com.altamira.data.model.purchase.Steel(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                            case "TPO":
+                                material = new br.com.altamira.data.model.purchase.Ink(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                            default:
+                                material = new br.com.altamira.data.model.sales.Component(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                        }
+                    }
+
+                    entityManager.persist(material);
+                    entityManager.flush();
+                }
+
+                if (material == null) {
+                    throw new IllegalArgumentException("ITEM " + item.getItem() + ", material " + component.getMaterial().getCode() + " " + component.getMaterial().getDescription() + " não foi encontrado no cadastro de Materiais");
                 }
 
                 component.setMaterial(material);
@@ -163,7 +194,8 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(
-            @NotNull MultivaluedMap<String, String> parameters) {
+            @NotNull MultivaluedMap<String, String> parameters
+    ) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
         Root<BOM> entity = criteriaQuery.from(BOM.class);

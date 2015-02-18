@@ -49,7 +49,9 @@ public class BOMDao extends BaseDao<BOM> {
     	Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
     	Root<Component> component = subQuery.from(Component.class);
     	subQuery.select(item.get("id"));
-    	subQuery.where(cb.equal(component.get("item").get("id"), item.get("id")));
+    	subQuery.where(cb.and(
+                cb.equal(component.get("item").get("id"), item.get("id")), 
+                cb.gt(item.get("id"), 0)));
 
     	subQuery.groupBy(component.get("item").get("id"));
     	subQuery.having( cb.gt( cb.sum(component.get("quantity").get("value")), cb.sum(component.get("delivered").get("value")) ) );
@@ -70,6 +72,10 @@ public class BOMDao extends BaseDao<BOM> {
         // Lazy load of items
         if (entity.getItem() != null) {
             entity.getItem().size();
+                                    
+            //ALTAMIRA-76: hides ITEM 0 from materials list 
+            entity.getItem().removeIf(p -> p.getItem() == 0);
+            
             entity.getItem().stream().forEach((item) -> {
                 item.getComponent().size();
                 item.getComponent().stream().forEach((component) -> {

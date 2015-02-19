@@ -57,7 +57,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
      */
     @Override
     public void updateDependencies(Delivery entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
-        calculateRemainingAndDelivered(entity.getComponent());
+        //calculateRemainingAndDelivered(entity.getComponent());
     }
 
     /**

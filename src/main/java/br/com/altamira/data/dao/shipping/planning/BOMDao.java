@@ -56,7 +56,7 @@ public class BOMDao extends BaseDao<BOM> {
         SetJoin<Item, Component> component = item.join(Item_.component);
         SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
         
-    	/* ALTAMIRA-56: remove this to get only the BOM headers list
+    	/* ALTAMIRA-56, ALTAMIRA-82: remove this to get only the BOM headers list
         Fetch<BOM, Item> fetch = bom.fetch("item");
     	SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) fetch;
 
@@ -82,7 +82,10 @@ public class BOMDao extends BaseDao<BOM> {
                 bom.get(BOM_.delivery))).distinct(true);
         
     	//criteriaQuery.where(cb.equal(item.get("id"), subQuery));
-        criteriaQuery.where(cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0));
+        criteriaQuery.where(cb.and(
+                cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
+                cb.isNotNull(bom.get(BOM_.checked))));
+        
     	criteriaQuery.orderBy(cb.asc(bom.get(BOM_.number)));
     	
     	return criteriaQuery;

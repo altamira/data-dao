@@ -4,6 +4,7 @@ import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
+import br.com.altamira.data.model.manufacture.bom.BOM_;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
 import br.com.altamira.data.model.measurement.Measure;
@@ -50,10 +51,10 @@ public class BOMDao extends BaseDao<BOM> {
         // Lazy load of items
         if (entity.getItem() != null) {
             entity.getItem().size();
-            
+
             //ALTAMIRA-76: hides ITEM 0 from materials list 
             entity.getItem().removeIf(p -> p.getItem() == 0);
-            
+
             entity.getItem().stream().forEach((item) -> {
                 item.getComponent().size();
                 item.getComponent().stream().forEach((component) -> {
@@ -71,7 +72,7 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public void resolveDependencies(BOM entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
-        entity.setChecked(null);
+        entity.setChecked(false);
 
         // Resolve dependencies
         entity.getItem().stream().forEach((Item item) -> {
@@ -194,19 +195,20 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(
-            @NotNull MultivaluedMap<String, String> parameters
-    ) {
+            @NotNull MultivaluedMap<String, String> parameters) 
+    {
+        
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
         Root<BOM> entity = criteriaQuery.from(BOM.class);
 
         criteriaQuery.select(cb.construct(BOM.class,
-                entity.get("id"),
-                entity.get("number"),
-                entity.get("customer"),
-                entity.get("checked"),
-                entity.get("created"),
-                entity.get("delivery")));
+                entity.get(BOM_.id),
+                entity.get(BOM_.number),
+                entity.get(BOM_.customer),
+                entity.get(BOM_.created),
+                entity.get(BOM_.delivery),
+                entity.get(BOM_.checked)));
 
         // filter by checked/unchecked
         if (parameters.get("checked") != null
@@ -214,8 +216,8 @@ public class BOMDao extends BaseDao<BOM> {
             boolean checked = Boolean.parseBoolean(parameters.get("checked").get(0));
 
             criteriaQuery.where(checked
-                    ? cb.isNotNull(entity.get("checked"))
-                    : cb.isNull(entity.get("checked")));
+                    ? cb.isNotNull(entity.get(BOM_.checked))
+                    : cb.isNull(entity.get(BOM_.checked)));
         }
 
         if (parameters.get("search") != null
@@ -224,8 +226,8 @@ public class BOMDao extends BaseDao<BOM> {
                     .toLowerCase().trim() + "%";
 
             criteriaQuery.where(cb.or(
-                    cb.like(cb.lower(entity.get("number").as(String.class)), searchCriteria),
-                    cb.like(cb.lower(entity.get("customer")), searchCriteria)));
+                    cb.like(cb.lower(entity.get(BOM_.number).as(String.class)), searchCriteria),
+                    cb.like(cb.lower(entity.get(BOM_.customer)), searchCriteria)));
         }
 
         return criteriaQuery;
@@ -235,18 +237,17 @@ public class BOMDao extends BaseDao<BOM> {
      *
      * @param checked
      * @param id
-     * @return
      */
-    public BOM updateChecked(
+    public void updateChecked(
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id,
             @NotNull boolean checked) {
 
-        BOM bom = entityManager.find(BOM.class, id);
+        BOM entity = entityManager.find(BOM.class, id);
 
-        bom.setChecked(checked ? new Date() : null);
+        entity.setChecked(checked);
 
-        return super.update(bom, null);
-
+        entityManager.merge(entity);
+        entityManager.flush();
     }
 
 }

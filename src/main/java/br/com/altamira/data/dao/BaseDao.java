@@ -190,7 +190,9 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
             Object parent = entityManager.find(
                     entity.getParentType(),
                     Long.parseLong(parameters.get("parentId").get(0)));
-            
+            if (parent == null) {
+                throw new IllegalArgumentException("Parent ID not found for " + entity.getParentType().getName() + ".");
+            }
             entity.setParent((br.com.altamira.data.model.Entity) parent);
         }
 
@@ -229,12 +231,13 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
             throw new IllegalArgumentException(ID_NOT_NULL_VALIDATION);
         }
 
-        if (parameters != null &&
-                parameters.get("parentId") != null) {
+        if (parameters.get("parentId") != null && !parameters.get("parentId").isEmpty()) {
             Object parent = entityManager.find(
                     entity.getParentType(),
                     Long.parseLong(parameters.get("parentId").get(0)));
-
+            if (parent == null) {
+                throw new IllegalArgumentException("Parent ID not found for " + entity.getParentType().getName() + ".");
+            }
             entity.setParent((br.com.altamira.data.model.Entity) parent);
         }
 

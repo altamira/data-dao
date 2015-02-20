@@ -133,7 +133,10 @@ public class BOMDao extends BaseDao<BOM> {
                 delivery.get(Delivery_.delivery),
                 cb.sum(delivery.get(Delivery_.remaining).get(Measure_.value))));
         
-    	criteriaQuery.where(cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0));
+    	criteriaQuery.where(cb.and(
+                cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
+                cb.isNotNull(bom.get(BOM_.checked))));
+        
         criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
     	
     	return criteriaQuery;

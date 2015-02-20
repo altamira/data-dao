@@ -114,55 +114,6 @@ public class BOMDao extends BaseDao<BOM> {
         }
     }
 
-    /**
-     *
-     * @param parameters
-     * @return
-     */
-    public CriteriaQuery<Remaining> getRemainingQuery(@NotNull MultivaluedMap<String, String> parameters) {
-    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    	
-    	CriteriaQuery<Remaining> criteriaQuery = cb.createQuery(Remaining.class);
-    	Root<BOM> bom = criteriaQuery.from(BOM.class);
- 
-    	SetJoin<BOM, Item> item = bom.join(BOM_.item);
-        SetJoin<Item, Component> component = item.join(Item_.component);
-        SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
-
-        // TODO: to increase performance and provide a better data structure to the client (BOM -> [1 to N] -> Delivery Date),
-        //       just read remaining delivery dates > 0 from database 
-        //       and do the group by and summarize using Java 8 streams and lambda expression 
-        //       http://jaxenter.com/sql-group-by-aggregations-java-8-114509.html
-    	criteriaQuery.select(cb.construct(Remaining.class, 
-                bom.get(BOM_.id),
-                delivery.get(Delivery_.delivery),
-                cb.sum(delivery.get(Delivery_.remaining).get(Measure_.value))));
-        
-    	criteriaQuery.where(cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0));
-        criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
-    	
-    	return criteriaQuery;
-    }
-    
-    /**
-     *
-     * @param parameters
-     * @param startPage
-     * @param pageSize
-     * @return
-     */
-    public List<Remaining> listRemaining(
-            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
-            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
-            @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
-            throws ConstraintViolationException {
-
-        return entityManager.createQuery(this.getRemainingQuery(parameters))
-                .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
-                .getResultList();
-    }
-    
     @Override
     public BOM create(
             @NotNull(message = ENTITY_VALIDATION) BOM entity,
@@ -208,18 +159,70 @@ public class BOMDao extends BaseDao<BOM> {
 
         throw new UnsupportedOperationException("Delete root Shipping Planning is not permitted.");
     }
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    public CriteriaQuery<Remaining> getRemainingQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    	
+    	CriteriaQuery<Remaining> criteriaQuery = cb.createQuery(Remaining.class);
+    	Root<BOM> bom = criteriaQuery.from(BOM.class);
+ 
+    	SetJoin<BOM, Item> item = bom.join(BOM_.item);
+        SetJoin<Item, Component> component = item.join(Item_.component);
+        SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
 
+        // TODO: to increase performance and provide a better data structure to the client (BOM -> [1 to N] -> Delivery Date),
+        //       just read remaining delivery dates > 0 from database 
+        //       and do the group by and summarize using Java 8 streams and lambda expression 
+        //       http://jaxenter.com/sql-group-by-aggregations-java-8-114509.html
+    	criteriaQuery.select(cb.construct(Remaining.class, 
+                bom.get(BOM_.id),
+                delivery.get(Delivery_.delivery),
+                cb.sum(delivery.get(Delivery_.remaining).get(Measure_.value))));
+        
+    	criteriaQuery.where(cb.and(
+                cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
+                cb.isNotNull(bom.get(BOM_.checked))));
+        
+        criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
+    	
+    	return criteriaQuery;
+    }
+    
+    /**
+     *
+     * @param parameters
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    public List<Remaining> listRemaining(
+            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+            @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+            throws ConstraintViolationException {
+
+        return entityManager.createQuery(this.getRemainingQuery(parameters))
+                .setFirstResult(startPage * pageSize)
+                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+                .getResultList();
+    }
+    
     /**
      * Replace the component delivery date with the new ones when the old date
      * match
      *
+     * @param id
      * @param delivery first one its the old date to be replaced second ones its
      * the new delivery date
      */
-    public void replaceDeliveryDates(long id, List<Date> delivery) {
+    public void replaceRemainingDeliveryDates(long id, List<Date> delivery) {
 
         if (delivery.isEmpty() || delivery.size() != 2) {
-            throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date.");
+            throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date in format yyyy-mm-dd");
         }
 
         // TODO replace from old date to the new ones for matching old date = component delivery date

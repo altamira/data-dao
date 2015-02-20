@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;

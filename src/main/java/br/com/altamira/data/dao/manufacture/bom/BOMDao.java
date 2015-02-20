@@ -171,8 +171,13 @@ public class BOMDao extends BaseDao<BOM> {
                 }
                 component.setRemaining(component.getQuantity().subtract(component.getDelivered()));
 
+                // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
+                //              function in group by sql clause
+                Date dt = component.getItem().getBOM().getDelivery();
+                dt.setTime(0); 
+
                 // set default delivery date
-                Delivery delivery = new Delivery(component, component.getItem().getBOM().getDelivery(), component.getQuantity());
+                Delivery delivery = new Delivery(component, dt, component.getQuantity());
                 delivery.setDelivered(component.getDelivered());
                 delivery.setRemaining(component.getQuantity().subtract(component.getDelivered()));
                 component.setDelivery(new ArrayList<Delivery>() {
@@ -195,9 +200,8 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(
-            @NotNull MultivaluedMap<String, String> parameters) 
-    {
-        
+            @NotNull MultivaluedMap<String, String> parameters) {
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
         Root<BOM> entity = criteriaQuery.from(BOM.class);

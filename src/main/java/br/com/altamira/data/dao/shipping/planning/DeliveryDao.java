@@ -14,6 +14,7 @@ import br.com.altamira.data.model.shipping.planning.Delivery;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "shipping.planning.DeliveryDao")
 public class DeliveryDao extends BaseDao<Delivery> {
-            
+
     /**
      *
      * @param entity
@@ -41,14 +42,21 @@ public class DeliveryDao extends BaseDao<Delivery> {
      */
     @Override
     public void resolveDependencies(Delivery entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
-        
-    	/* ALTAMIRA-66: create delivery date not working */
-    	// units for quantity, delivered and remaining needs to set before persist 
-    	Unit quantityUnit = entityManager.find(Unit.class, entity.getQuantity().getUnit().getId());
-    	entity.getQuantity().setUnit(quantityUnit);
-    	entity.getDelivered().setUnit(quantityUnit);
-    	entity.getRemaining().setUnit(quantityUnit);
+
+        /* ALTAMIRA-66: create delivery date not working */
+        // units for quantity, delivered and remaining needs to set before persist 
+        Unit quantityUnit = entityManager.find(Unit.class, entity.getQuantity().getUnit().getId());
+        entity.getQuantity().setUnit(quantityUnit);
+        entity.getDelivered().setUnit(quantityUnit);
+        entity.getRemaining().setUnit(quantityUnit);
+
+        // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
+        //              function in group by sql clause
+        Date dt = entity.getDelivery();
+        dt.setTime(0);
+        entity.setDelivery(dt);
     }
+
     /**
      *
      * @param entity
@@ -78,36 +86,36 @@ public class DeliveryDao extends BaseDao<Delivery> {
 
         return criteriaQuery;
     }
-    
+
     public Delivery join(List<Delivery> entities) {
         return new Delivery();
     }
-    
+
     public List<Delivery> divide(Delivery entity, List<Delivery> entities) {
         return new ArrayList<>();
     }
-    
+
     /**
      *
      * @param entity
      */
     public void calculateRemainingAndDelivered(Component entity) {
-    	/* ALTAMIRA-22: Shipping Planning - amount remaining calculation */
+        /* ALTAMIRA-22: Shipping Planning - amount remaining calculation */
         // Retrieve the amount of delivered item quantities
-        
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
         Root<Delivered> root = criteria.from(Delivered.class);
         Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
         criteria.select(sum);
         criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
-        
+
         Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
-                                        entity.getQuantity().getUnit());
+                entity.getQuantity().getUnit());
 
         entity.setDelivered(delivered);
         entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
-        
+
         entityManager.persist(entity);
 
         Set<Delivery> deliverySet = entity.getDelivery();
@@ -121,7 +129,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
             delivery.setRemaining(delivery.getQuantity().subtract(delivery.getDelivered()));
 
             entityManager.persist(delivery);
-            
+
             delivered.subtract(delivery.getQuantity().min(delivered));
         }
 

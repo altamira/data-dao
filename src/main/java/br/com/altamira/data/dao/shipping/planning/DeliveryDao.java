@@ -6,6 +6,7 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.dao.util.DateAndTime;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
@@ -52,9 +53,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
 
         // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
         //              function in group by sql clause
-        Date dt = entity.getDelivery();
-        dt.setTime(0);
-        entity.setDelivery(dt);
+        entity.setDelivery(DateAndTime.stripTimePortion(entity.getDelivery()));
     }
 
     /**

@@ -1,6 +1,7 @@
 package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.dao.util.DateAndTime;
 import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
@@ -173,8 +174,7 @@ public class BOMDao extends BaseDao<BOM> {
 
                 // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
                 //              function in group by sql clause
-                Date dt = component.getItem().getBOM().getDelivery();
-                dt.setTime(0); 
+                Date dt = DateAndTime.stripTimePortion(component.getItem().getBOM().getDelivery());
 
                 // set default delivery date
                 Delivery delivery = new Delivery(component, dt, component.getQuantity());
@@ -234,6 +234,8 @@ public class BOMDao extends BaseDao<BOM> {
                     cb.like(cb.lower(entity.get(BOM_.customer)), searchCriteria)));
         }
 
+        criteriaQuery.orderBy(cb.asc(entity.get(BOM_.number)));
+        
         return criteriaQuery;
     }
 

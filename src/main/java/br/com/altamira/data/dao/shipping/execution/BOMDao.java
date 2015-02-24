@@ -139,6 +139,8 @@ public class BOMDao extends BaseDao<BOM> {
         
         criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
     	
+        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.id)), cb.asc(delivery.get(Delivery_.delivery)));
+        
     	return criteriaQuery;
     }
     
@@ -206,22 +208,6 @@ public class BOMDao extends BaseDao<BOM> {
             throws ConstraintViolationException, IllegalArgumentException {
 
         throw new UnsupportedOperationException("Delete Shipping Execution is not permitted.");
-    }
-
-    /**
-     * Replace the component delivery date with the new ones when the old date
-     * match
-     *
-     * @param delivery first one its the old date to be replaced second ones its
-     * the new delivery date
-     */
-    public void replaceDeliveryDates(long id, List<Date> delivery) {
-
-        if (delivery.isEmpty() || delivery.size() != 2) {
-            throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date.");
-        }
-
-        // TODO replace from old date to the new ones for matching old date = component delivery date
     }
 
 }

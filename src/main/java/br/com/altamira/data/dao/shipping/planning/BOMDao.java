@@ -198,7 +198,7 @@ public class BOMDao extends BaseDao<BOM> {
 
         criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
 
-        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.number)));
+        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.id)), cb.asc(delivery.get(Delivery_.delivery)));
 
         return criteriaQuery;
     }

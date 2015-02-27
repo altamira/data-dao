@@ -236,8 +236,11 @@ public class BOMDao extends BaseDao<BOM> {
             throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date in format yyyy-mm-dd");
         }
 
-        Date dt0 = DateAndTime.stripTimePortion(dates.get(0));
-        Date dt1 = DateAndTime.stripTimePortion(dates.get(1));
+        //Date dt0 = DateAndTime.stripTimePortion(dates.get(0));
+        java.sql.Date dt0 = new java.sql.Date(dates.get(0).getTime());
+        
+        //Date dt1 = DateAndTime.stripTimePortion(dates.get(1));
+        java.sql.Date dt1 = new java.sql.Date(dates.get(1).getTime());
         
         /*
         UPDATE 
@@ -262,8 +265,8 @@ public class BOMDao extends BaseDao<BOM> {
         updateQuery.set(entity.get(Delivery_.delivery), dt1);
 
         // subquery
-        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
-        Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
+        //CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+        Subquery<Long> subQuery = updateQuery.subquery(Long.class);
         Root<BOM> bom = subQuery.from(BOM.class);
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
         SetJoin<Item, Component> component = item.join(Item_.component);
@@ -273,7 +276,7 @@ public class BOMDao extends BaseDao<BOM> {
         
         subQuery.where(cb.and(
                 cb.equal(bom.get(BOM_.id), id),
-                //cb.equal(delivery.get(Delivery_.delivery), dt0), // -> update nothing if filter by date
+                cb.equal(delivery.get(Delivery_.delivery), dt0), // -> update nothing if filter by date
                 cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
                 cb.isNotNull(bom.get(BOM_.checked))));
 

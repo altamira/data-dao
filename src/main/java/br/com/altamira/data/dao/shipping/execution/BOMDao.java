@@ -12,16 +12,20 @@ import br.com.altamira.data.model.shipping.execution.BOM_;
 import br.com.altamira.data.model.shipping.execution.Component;
 import br.com.altamira.data.model.shipping.execution.Component_;
 import br.com.altamira.data.model.shipping.execution.Delivery;
-import br.com.altamira.data.model.shipping.execution.Delivery_;
 import br.com.altamira.data.model.shipping.execution.Item;
 import br.com.altamira.data.model.shipping.execution.Item_;
+import br.com.altamira.data.model.shipping.execution.PackingList;
 import br.com.altamira.data.model.shipping.execution.Remaining;
-import java.util.Date;
+import br.com.altamira.data.model.shipping.execution.Delivery_;
+import br.com.altamira.data.model.shipping.execution.PackingList_;
+import br.com.altamira.data.model.shipping.execution.Delivery_;
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Fetch;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
@@ -47,6 +51,8 @@ public class BOMDao extends BaseDao<BOM> {
     	
     	CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
     	Root<BOM> bom = criteriaQuery.from(BOM.class);
+        //Fetch<BOM, PackingList> fetch = bom.fetch(BOM_.packingList, JoinType.LEFT);
+        //SetJoin<BOM, PackingList> packingList = (SetJoin<BOM, PackingList>) fetch;
         
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
         SetJoin<Item, Component> component = item.join(Item_.component);
@@ -75,14 +81,15 @@ public class BOMDao extends BaseDao<BOM> {
                 bom.get(BOM_.number),
                 bom.get(BOM_.customer),
                 bom.get(BOM_.created),
-                bom.get(BOM_.delivery))).distinct(true);
+                bom.get(BOM_.delivery)/*,
+                packingList.get(PackingList_.id)*/)).distinct(true);
         
     	//criteriaQuery.where(cb.equal(item.get("id"), subQuery));
         criteriaQuery.where(cb.and(
                 cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
                 cb.isNotNull(bom.get(BOM_.checked))));
         
-    	criteriaQuery.orderBy(cb.asc(bom.get(BOM_.number)));
+    	criteriaQuery.orderBy(cb.asc(bom.get(BOM_.delivery)));
     	
     	return criteriaQuery;
     }

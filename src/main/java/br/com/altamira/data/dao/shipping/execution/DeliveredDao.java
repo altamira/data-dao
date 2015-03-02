@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -29,7 +28,20 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless
 public class DeliveredDao extends BaseDao<Delivered> {
+    
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Delivered entity) {
+        // Lazy load of items
+        if (entity.getComponent().getMaterial() != null) {
+            entity.getComponent().getMaterial().setComponent(null);
+        }
 
+    }
+    
     /**
      *
      * @param parameters
@@ -44,12 +56,24 @@ public class DeliveredDao extends BaseDao<Delivered> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("component"),
+        criteriaQuery.where(cb.equal(entity.get("packinglist"),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;
     }
-    
+
+    /**
+     *
+     * @param entity
+     * @param parameters
+     */
+    @Override
+    public void resolveDependencies(Delivered entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+        // Resolve dependencies
+
+        entity.setComponent(entityManager.find(Component.class, entity.getComponent().getId()));
+    }
+
     /**
      *
      * @param entity
@@ -65,22 +89,22 @@ public class DeliveredDao extends BaseDao<Delivered> {
      * @param entity
      */
     public void calculateRemainingAndDelivered(Component entity) {
-    	/* ALTAMIRA-22: Shipping Planning - amount remaining calculation */
+        /* ALTAMIRA-22: Shipping Planning - amount remaining calculation */
         // Retrieve the amount of delivered item quantities
-        
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
         Root<Delivered> root = criteria.from(Delivered.class);
         Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
         criteria.select(sum);
         criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
-        
+
         Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
-                                        entity.getQuantity().getUnit());
+                entity.getQuantity().getUnit());
 
         entity.setDelivered(delivered);
         entity.setRemaining(entity.getQuantity().subtract(entity.getDelivered()));
-        
+
         entityManager.persist(entity);
         entityManager.flush();
 
@@ -96,7 +120,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
 
             entityManager.persist(delivery);
             entityManager.flush();
-            
+
             delivered.subtract(delivery.getQuantity().min(delivered));
         }
 

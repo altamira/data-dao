@@ -14,18 +14,13 @@ import br.com.altamira.data.model.shipping.execution.Component_;
 import br.com.altamira.data.model.shipping.execution.Delivery;
 import br.com.altamira.data.model.shipping.execution.Item;
 import br.com.altamira.data.model.shipping.execution.Item_;
-import br.com.altamira.data.model.shipping.execution.PackingList;
 import br.com.altamira.data.model.shipping.execution.Remaining;
-import br.com.altamira.data.model.shipping.execution.Delivery_;
-import br.com.altamira.data.model.shipping.execution.PackingList_;
 import br.com.altamira.data.model.shipping.execution.Delivery_;
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Fetch;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
@@ -47,53 +42,64 @@ public class BOMDao extends BaseDao<BOM> {
      */
     @Override
     public CriteriaQuery<BOM> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
-    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    	
-    	CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
-    	Root<BOM> bom = criteriaQuery.from(BOM.class);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+        Root<BOM> bom = criteriaQuery.from(BOM.class);
         //Fetch<BOM, PackingList> fetch = bom.fetch(BOM_.packingList, JoinType.LEFT);
         //SetJoin<BOM, PackingList> packingList = (SetJoin<BOM, PackingList>) fetch;
-        
+
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
         SetJoin<Item, Component> component = item.join(Item_.component);
         SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
-        
-    	/* ALTAMIRA-56, ALTAMIRA-82: remove this to get only the BOM headers list
-        Fetch<BOM, Item> fetch = bom.fetch("item");
-    	SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) fetch;
 
-    	Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
-    	Root<Component> component = subQuery.from(Component.class);
-    	subQuery.select(item.get("id"));
-    	subQuery.where(cb.and(
-                cb.equal(component.get("item").get("id"), item.get("id")), 
-                cb.gt(item.get("id"), 0)));
+        /* ALTAMIRA-56, ALTAMIRA-82: remove this to get only the BOM headers list
+         Fetch<BOM, Item> fetch = bom.fetch("item");
+         SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) fetch;
 
-    	subQuery.groupBy(component.get("item").get("id"));
-    	subQuery.having( 
-                cb.gt( 
-                        cb.sum(component.get("quantity").get("value")), 
-                        cb.sum(component.get("delivered").get("value")) ) );
-        */
+         Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
+         Root<Component> component = subQuery.from(Component.class);
+         subQuery.select(item.get("id"));
+         subQuery.where(cb.and(
+         cb.equal(component.get("item").get("id"), item.get("id")), 
+         cb.gt(item.get("id"), 0)));
 
-    	criteriaQuery.select(cb.construct(BOM.class,
+         subQuery.groupBy(component.get("item").get("id"));
+         subQuery.having( 
+         cb.gt( 
+         cb.sum(component.get("quantity").get("value")), 
+         cb.sum(component.get("delivered").get("value")) ) );
+         */
+        criteriaQuery.select(cb.construct(BOM.class,
                 bom.get(BOM_.id),
                 bom.get(BOM_.number),
                 bom.get(BOM_.customer),
                 bom.get(BOM_.created),
                 bom.get(BOM_.delivery)/*,
-                packingList.get(PackingList_.id)*/)).distinct(true);
-        
-    	//criteriaQuery.where(cb.equal(item.get("id"), subQuery));
-        criteriaQuery.where(cb.and(
-                cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
-                cb.isNotNull(bom.get(BOM_.checked))));
-        
-    	criteriaQuery.orderBy(cb.asc(bom.get(BOM_.delivery)));
-    	
-    	return criteriaQuery;
+         packingList.get(PackingList_.id)*/)).distinct(true);
+
+        if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()
+                && !parameters.get("search").get(0).isEmpty()) {
+            String searchCriteria = "%" + parameters.get("search").get(0)
+                    .toLowerCase().trim() + "%";
+
+            criteriaQuery.where(cb.or(
+                    cb.like(cb.lower(bom.get(BOM_.number).as(String.class)), searchCriteria),
+                    cb.like(cb.lower(bom.get(BOM_.customer)), searchCriteria)));
+        } else {
+            //criteriaQuery.where(cb.equal(item.get("id"), subQuery));
+            criteriaQuery.where(cb.and(
+                    cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
+                    cb.isNotNull(bom.get(BOM_.checked)),
+                    cb.gt(item.get(Item_.item), 0)));
+        }
+
+        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.delivery)));
+
+        return criteriaQuery;
     }
-    
+
     /**
      *
      * @param entity
@@ -103,10 +109,10 @@ public class BOMDao extends BaseDao<BOM> {
         // Lazy load of items
         if (entity.getItem() != null) {
             entity.getItem().size();
-            
+
             //ALTAMIRA-76: hides ITEM 0 from materials list 
             entity.getItem().removeIf(p -> p.getItem() == 0);
-            
+
             entity.getItem().stream().forEach((item) -> {
                 item.getComponent().size();
                 item.getComponent().stream().forEach((component) -> {
@@ -116,18 +122,19 @@ public class BOMDao extends BaseDao<BOM> {
             });
         }
     }
+
     /**
      *
      * @param parameters
      * @return
      */
     public CriteriaQuery<Remaining> getRemainingQuery(@NotNull MultivaluedMap<String, String> parameters) {
-    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    	
-    	CriteriaQuery<Remaining> criteriaQuery = cb.createQuery(Remaining.class);
-    	Root<BOM> bom = criteriaQuery.from(BOM.class);
- 
-    	SetJoin<BOM, Item> item = bom.join(BOM_.item);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<Remaining> criteriaQuery = cb.createQuery(Remaining.class);
+        Root<BOM> bom = criteriaQuery.from(BOM.class);
+
+        SetJoin<BOM, Item> item = bom.join(BOM_.item);
         SetJoin<Item, Component> component = item.join(Item_.component);
         SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
 
@@ -135,22 +142,22 @@ public class BOMDao extends BaseDao<BOM> {
         //       just read remaining delivery dates > 0 from database 
         //       and do the group by and summarize using Java 8 streams and lambda expression 
         //       http://jaxenter.com/sql-group-by-aggregations-java-8-114509.html
-    	criteriaQuery.select(cb.construct(Remaining.class, 
+        criteriaQuery.select(cb.construct(Remaining.class,
                 bom.get(BOM_.id),
                 delivery.get(Delivery_.delivery),
                 cb.sum(delivery.get(Delivery_.remaining).get(Measure_.value))));
-        
-    	criteriaQuery.where(cb.and(
+
+        criteriaQuery.where(cb.and(
                 cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
                 cb.isNotNull(bom.get(BOM_.checked))));
-        
+
         criteriaQuery.groupBy(bom.get(BOM_.id), delivery.get(Delivery_.delivery));
-    	
+
         criteriaQuery.orderBy(cb.asc(bom.get(BOM_.id)), cb.asc(delivery.get(Delivery_.delivery)));
-        
-    	return criteriaQuery;
+
+        return criteriaQuery;
     }
-    
+
     /**
      *
      * @param parameters
@@ -169,7 +176,6 @@ public class BOMDao extends BaseDao<BOM> {
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
     }
-    
 
     @Override
     public BOM create(

@@ -45,10 +45,10 @@ public class BOMDao extends BaseDao<BOM> {
 
     @Inject
     ComponentDao componentDao;
-    
+
     @Inject
     Logger log;
-    
+
     /**
      *
      * @param parameters
@@ -89,12 +89,24 @@ public class BOMDao extends BaseDao<BOM> {
                 bom.get(BOM_.created),
                 bom.get(BOM_.delivery))).distinct(true);
 
-        //criteriaQuery.where(cb.equal(item.get("id"), subQuery));
-        criteriaQuery.where(cb.and(
-                cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
-                cb.isNotNull(bom.get(BOM_.checked))));
+        if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()
+                && !parameters.get("search").get(0).isEmpty()) {
+            String searchCriteria = "%" + parameters.get("search").get(0)
+                    .toLowerCase().trim() + "%";
 
-        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.number)));
+            criteriaQuery.where(cb.or(
+                    cb.like(cb.lower(bom.get(BOM_.number).as(String.class)), searchCriteria),
+                    cb.like(cb.lower(bom.get(BOM_.customer)), searchCriteria)));
+        } else {
+            //criteriaQuery.where(cb.equal(item.get("id"), subQuery));
+            criteriaQuery.where(cb.and(
+                    cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
+                    cb.isNotNull(bom.get(BOM_.checked)),
+                    cb.gt(item.get(Item_.item), 0)));
+        }
+        
+        criteriaQuery.orderBy(cb.asc(bom.get(BOM_.delivery)));
 
         return criteriaQuery;
     }
@@ -238,23 +250,22 @@ public class BOMDao extends BaseDao<BOM> {
 
         Date dt0 = DateAndTime.stripTimePortion(dates.get(0));
         Date dt1 = DateAndTime.stripTimePortion(dates.get(1));
-        
+
         /*
-        UPDATE 
-            MN_BOM_ITEM_CMP_SH
-          SET 
-            MN_BOM_ITEM_CMP_SH.DELIVERY = '11/03/15' 
-          WHERE
-            MN_BOM_ITEM_CMP_SH.ID IN 
-          (SELECT 
-            MN_BOM_ITEM_CMP_SH.ID
-          FROM 
-            MN_BOM  INNER JOIN MN_BOM_ITEM        ON MN_BOM.ID =          MN_BOM_ITEM.BOM 
-                    INNER JOIN MN_BOM_ITEM_CMP    ON MN_BOM_ITEM.ID =     MN_BOM_ITEM_CMP.ITEM 
-                    INNER JOIN MN_BOM_ITEM_CMP_SH ON MN_BOM_ITEM_CMP.ID = MN_BOM_ITEM_CMP_SH.COMPONENT
-          WHERE MN_BOM.ID = 60126 AND MN_BOM_ITEM_CMP_SH.DELIVERY = '11/02/15');
-        */
-        
+         UPDATE 
+         MN_BOM_ITEM_CMP_SH
+         SET 
+         MN_BOM_ITEM_CMP_SH.DELIVERY = '11/03/15' 
+         WHERE
+         MN_BOM_ITEM_CMP_SH.ID IN 
+         (SELECT 
+         MN_BOM_ITEM_CMP_SH.ID
+         FROM 
+         MN_BOM  INNER JOIN MN_BOM_ITEM        ON MN_BOM.ID =          MN_BOM_ITEM.BOM 
+         INNER JOIN MN_BOM_ITEM_CMP    ON MN_BOM_ITEM.ID =     MN_BOM_ITEM_CMP.ITEM 
+         INNER JOIN MN_BOM_ITEM_CMP_SH ON MN_BOM_ITEM_CMP.ID = MN_BOM_ITEM_CMP_SH.COMPONENT
+         WHERE MN_BOM.ID = 60126 AND MN_BOM_ITEM_CMP_SH.DELIVERY = '11/02/15');
+         */
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
         CriteriaUpdate<Delivery> updateQuery = cb.createCriteriaUpdate(Delivery.class);
@@ -268,9 +279,9 @@ public class BOMDao extends BaseDao<BOM> {
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
         SetJoin<Item, Component> component = item.join(Item_.component);
         SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
-        
+
         subQuery.select(delivery.get(Delivery_.id));
-        
+
         subQuery.where(cb.and(
                 cb.equal(bom.get(BOM_.id), id),
                 //cb.equal(delivery.get(Delivery_.delivery), dt0), // -> update nothing if filter by date
@@ -278,11 +289,11 @@ public class BOMDao extends BaseDao<BOM> {
                 cb.isNotNull(bom.get(BOM_.checked))));
 
         log.info("Execution Query String");
-        
+
         Predicate predicate = entity.get(Delivery_.id).in(subQuery);
         updateQuery.where(predicate);
         Query q = entityManager.createQuery(updateQuery);
-        
+
         return q.executeUpdate(); // this returns affected records > 0 but none record is updated at database.
     }
 

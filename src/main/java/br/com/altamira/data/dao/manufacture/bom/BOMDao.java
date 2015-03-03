@@ -225,7 +225,8 @@ public class BOMDao extends BaseDao<BOM> {
         }
 
         if (parameters.get("search") != null
-                && !parameters.get("search").isEmpty()) {
+                && !parameters.get("search").isEmpty()
+                && !parameters.get("search").get(0).isEmpty()) {
             String searchCriteria = "%" + parameters.get("search").get(0)
                     .toLowerCase().trim() + "%";
 
@@ -234,7 +235,7 @@ public class BOMDao extends BaseDao<BOM> {
                     cb.like(cb.lower(entity.get(BOM_.customer)), searchCriteria)));
         }
 
-        criteriaQuery.orderBy(cb.asc(entity.get(BOM_.number)));
+        criteriaQuery.orderBy(cb.asc(entity.get(BOM_.delivery)));
         
         return criteriaQuery;
     }

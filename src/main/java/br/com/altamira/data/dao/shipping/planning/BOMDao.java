@@ -248,10 +248,8 @@ public class BOMDao extends BaseDao<BOM> {
             throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date in format yyyy-mm-dd");
         }
 
-        //Date dt0 = DateAndTime.stripTimePortion(dates.get(0));
         java.sql.Date dt0 = new java.sql.Date(dates.get(0).getTime());
         
-        //Date dt1 = DateAndTime.stripTimePortion(dates.get(1));
         java.sql.Date dt1 = new java.sql.Date(dates.get(1).getTime());
         
         /*
@@ -288,7 +286,7 @@ public class BOMDao extends BaseDao<BOM> {
 
         subQuery.where(cb.and(
                 cb.equal(bom.get(BOM_.id), id),
-                cb.equal(delivery.get(Delivery_.delivery), dt0), // -> update nothing if filter by date
+                cb.equal(delivery.get(Delivery_.delivery), dt0), 
                 cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
                 cb.isNotNull(bom.get(BOM_.checked))));
 
@@ -298,7 +296,7 @@ public class BOMDao extends BaseDao<BOM> {
         updateQuery.where(predicate);
         Query q = entityManager.createQuery(updateQuery);
 
-        return q.executeUpdate(); // this returns affected records > 0 but none record is updated at database.
+        return q.executeUpdate(); 
     }
 
 }

@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.execution;
+package br.com.altamira.data.dao.manufacture.execution;
 
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Component;
+import br.com.altamira.data.model.manufacture.execution.Component;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -26,7 +26,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "br.com.altamira.data.dao.shipping.execution.ComponentDao")
+@Stateless(name = "br.com.altamira.data.dao.manufacture.execution.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
     
     /**

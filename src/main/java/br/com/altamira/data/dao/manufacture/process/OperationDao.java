@@ -12,7 +12,6 @@ import br.com.altamira.data.model.measurement.Expression.UnresolvedTokenExceptio
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Variables;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -27,7 +26,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless
+@Stateless(name = "br.com.altamira.data.dao.manufacture.process.OperationDao")
 public class OperationDao extends BaseDao<Operation> {
 
     /**

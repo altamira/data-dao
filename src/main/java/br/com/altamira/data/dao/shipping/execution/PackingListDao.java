@@ -13,7 +13,7 @@ import javax.ejb.Stateless;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.execution.PackingListDao")
+@Stateless(name = "br.com.altamira.data.dao.shipping.execution.PackingListDao")
 public class PackingListDao extends BaseDao<PackingList> {
 
     /**

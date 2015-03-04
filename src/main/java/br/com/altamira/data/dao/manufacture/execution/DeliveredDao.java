@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.execution;
+package br.com.altamira.data.dao.manufacture.execution;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Measure;
-import br.com.altamira.data.model.shipping.execution.Component;
-import br.com.altamira.data.model.shipping.execution.Delivered;
-import br.com.altamira.data.model.shipping.execution.Delivery;
+import br.com.altamira.data.model.manufacture.execution.Component;
+import br.com.altamira.data.model.manufacture.execution.Delivered;
+import br.com.altamira.data.model.manufacture.execution.Delivery;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,7 +26,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "br.com.altamira.data.dao.shipping.execution.DeliveredDao")
+@Stateless(name = "br.com.altamira.data.dao.manufacture.execution.DeliveredDao")
 public class DeliveredDao extends BaseDao<Delivered> {
     
     /**
@@ -56,7 +56,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("packinglist"),
+        criteriaQuery.where(cb.equal(entity.get("component"),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

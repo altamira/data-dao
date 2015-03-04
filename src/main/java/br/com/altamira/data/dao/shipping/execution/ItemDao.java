@@ -9,7 +9,6 @@ package br.com.altamira.data.dao.shipping.execution;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Delivery;
 import br.com.altamira.data.model.shipping.execution.Item;
 import java.util.List;
 
@@ -28,7 +27,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.execution.ItemDao")
+@Stateless(name = "br.com.altamira.data.dao.shipping.execution.ItemDao")
 public class ItemDao extends BaseDao<Item> {
 
     @Inject 

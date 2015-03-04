@@ -3,16 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.altamira.data.dao.shipping.execution;
+package br.com.altamira.data.dao.manufacture.execution;
 
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Component;
+import br.com.altamira.data.model.manufacture.execution.Item;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -26,21 +27,11 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "br.com.altamira.data.dao.shipping.execution.ComponentDao")
-public class ComponentDao extends BaseDao<Component> {
-    
-    /**
-     *
-     * @param entity
-     */
-    @Override
-    public void lazyLoad(Component entity) {
-        // Lazy load of items
-        if (entity.getMaterial() != null) {
-            entity.getMaterial().setComponent(null);
-        }
+@Stateless(name = "br.com.altamira.data.dao.manufacture.execution.ItemDao")
+public class ItemDao extends BaseDao<Item> {
 
-    }
+    @Inject 
+    ComponentDao componentDao;
 
     /**
      *
@@ -48,36 +39,53 @@ public class ComponentDao extends BaseDao<Component> {
      * @return
      */
     @Override
-    public CriteriaQuery<Component> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    public CriteriaQuery<Item> getCriteriaQuery(@NotNull MultivaluedMap<String, String> parameters) {
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Component> criteriaQuery = cb.createQuery(Component.class);
-        Root<Component> entity = criteriaQuery.from(Component.class);
+        CriteriaQuery<Item> criteriaQuery = cb.createQuery(Item.class);
+        Root<Item> entity = criteriaQuery.from(Item.class);
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("item"),
+        criteriaQuery.where(cb.equal(entity.get("bom"),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;
     }
+        
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Item entity) {
+        // Lazy load of items
+        if (entity.getComponent() != null) {
+            entity.getComponent().size();
+            entity.getComponent().stream().forEach((component) -> {
+                if (component.getMaterial() != null) {
+                    component.getMaterial().setComponent(null);
+                }
+            });
+        }
+    }
     
     @Override
-    public Component create(
-            @NotNull(message = ENTITY_VALIDATION) Component entity,
+    public Item create(
+            @NotNull(message = ENTITY_VALIDATION) Item entity,
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Create Shipping Execution Component is not permitted.");
+        throw new UnsupportedOperationException("Create Shipping Execution Item is not permitted.");
     }
 
     @Override
-    public Component update(
-            @NotNull(message = ENTITY_VALIDATION) Component entity,
+    public Item update(
+            @NotNull(message = ENTITY_VALIDATION) Item entity,
             MultivaluedMap<String, String> parameters)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Update Shipping Execution Component is not permitted.");
+        throw new UnsupportedOperationException("Update Shipping Execution Item is not permitted.");
     }
 
     /**
@@ -91,7 +99,7 @@ public class ComponentDao extends BaseDao<Component> {
             @Min(value = 1, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Execution Component is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Item is not permitted.");
     }
 
     /**
@@ -102,10 +110,10 @@ public class ComponentDao extends BaseDao<Component> {
      */
     @Override
     public void removeAll(
-            @NotNull List<Component> entities)
+            @NotNull List<Item> entities)
             throws ConstraintViolationException, IllegalArgumentException {
 
-        throw new UnsupportedOperationException("Delete Shipping Execution Component is not permitted.");
+        throw new UnsupportedOperationException("Delete Shipping Execution Item is not permitted.");
     }
 
 }

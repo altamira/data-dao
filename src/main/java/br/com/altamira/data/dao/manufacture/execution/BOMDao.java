@@ -1,4 +1,4 @@
-package br.com.altamira.data.dao.shipping.execution;
+package br.com.altamira.data.dao.manufacture.execution;
 
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
@@ -7,15 +7,15 @@ import static br.com.altamira.data.dao.Dao.PAGE_SIZE_VALIDATION;
 import static br.com.altamira.data.dao.Dao.PARAMETER_VALIDATION;
 import static br.com.altamira.data.dao.Dao.START_PAGE_VALIDATION;
 import br.com.altamira.data.model.measurement.Measure_;
-import br.com.altamira.data.model.shipping.execution.BOM;
-import br.com.altamira.data.model.shipping.execution.BOM_;
-import br.com.altamira.data.model.shipping.execution.Component;
-import br.com.altamira.data.model.shipping.execution.Component_;
-import br.com.altamira.data.model.shipping.execution.Delivery;
-import br.com.altamira.data.model.shipping.execution.Item;
-import br.com.altamira.data.model.shipping.execution.Item_;
-import br.com.altamira.data.model.shipping.execution.Remaining;
-import br.com.altamira.data.model.shipping.execution.Delivery_;
+import br.com.altamira.data.model.manufacture.execution.BOM;
+import br.com.altamira.data.model.manufacture.execution.BOM_;
+import br.com.altamira.data.model.manufacture.execution.Component;
+import br.com.altamira.data.model.manufacture.execution.Component_;
+import br.com.altamira.data.model.manufacture.execution.Delivery;
+import br.com.altamira.data.model.manufacture.execution.Item;
+import br.com.altamira.data.model.manufacture.execution.Item_;
+import br.com.altamira.data.model.manufacture.execution.Remaining;
+import br.com.altamira.data.model.manufacture.execution.Delivery_;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -32,7 +32,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * Sales bom persistency strategy
  *
  */
-@Stateless(name = "br.com.altamira.data.dao.shipping.execution.BOMDao")
+@Stateless(name = "br.com.altamira.data.dao.manufacture.execution.BOMDao")
 public class BOMDao extends BaseDao<BOM> {
 
     /**

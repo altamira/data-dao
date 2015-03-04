@@ -8,11 +8,9 @@ package br.com.altamira.data.dao.shipping.execution;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
-import br.com.altamira.data.model.shipping.execution.Component;
 import br.com.altamira.data.model.shipping.execution.Delivery;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -25,7 +23,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Alessandro
  */
-@Stateless(name = "shipping.execution.DeliveryDao")
+@Stateless(name = "br.com.altamira.data.dao.shipping.execution.DeliveryDao")
 public class DeliveryDao extends BaseDao<Delivery> {
 
     /**

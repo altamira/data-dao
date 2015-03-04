@@ -56,7 +56,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("packinglist"),
+        criteriaQuery.where(cb.equal(entity.get("packingList"),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

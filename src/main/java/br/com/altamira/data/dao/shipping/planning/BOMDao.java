@@ -6,7 +6,6 @@ import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import static br.com.altamira.data.dao.Dao.PAGE_SIZE_VALIDATION;
 import static br.com.altamira.data.dao.Dao.PARAMETER_VALIDATION;
 import static br.com.altamira.data.dao.Dao.START_PAGE_VALIDATION;
-import br.com.altamira.data.dao.util.DateAndTime;
 import br.com.altamira.data.model.shipping.planning.BOM_;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.Component;
@@ -18,7 +17,9 @@ import br.com.altamira.data.model.shipping.planning.Item;
 import br.com.altamira.data.model.shipping.planning.Item_;
 import br.com.altamira.data.model.shipping.planning.Remaining;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -241,8 +242,9 @@ public class BOMDao extends BaseDao<BOM> {
      * @param id
      * @param dates first one its the old date to be replaced second ones its
      * the new delivery date
+     * @return 
      */
-    public int replaceRemainingDeliveryDates(long id, List<Date> dates) {
+    public Map<String, Long> replaceRemainingDeliveryDates(long id, List<Date> dates) {
 
         if (dates.isEmpty() || dates.size() != 2) {
             throw new IllegalArgumentException("Two dates are required: first one is the old date to be replaced, second ones is the new date in format yyyy-mm-dd");
@@ -296,7 +298,13 @@ public class BOMDao extends BaseDao<BOM> {
         updateQuery.where(predicate);
         Query q = entityManager.createQuery(updateQuery);
 
-        return q.executeUpdate(); 
+        Long count = (long) q.executeUpdate(); 
+        
+        HashMap<String, Long > result = new HashMap<String, Long>(){{
+            put("count", count);
+        }};
+        
+        return result;
     }
 
 }

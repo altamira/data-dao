@@ -10,6 +10,7 @@ import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import br.com.altamira.data.model.manufacture.execution.Item;
+import br.com.altamira.data.model.manufacture.execution.Item_;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -47,7 +48,7 @@ public class ItemDao extends BaseDao<Item> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("bom"),
+        criteriaQuery.where(cb.equal(entity.get(Item_.bom),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

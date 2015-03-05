@@ -6,6 +6,7 @@ import br.com.altamira.data.model.manufacture.process.Consume;
 
 import javax.ejb.Stateless;
 import br.com.altamira.data.model.manufacture.process.Operation;
+import br.com.altamira.data.model.manufacture.process.Operation_;
 import br.com.altamira.data.model.manufacture.process.Produce;
 import br.com.altamira.data.model.manufacture.process.Use;
 import br.com.altamira.data.model.measurement.Expression.UnresolvedTokenException;
@@ -106,14 +107,14 @@ public class OperationDao extends BaseDao<Operation> {
         Root<Operation> entity = criteriaQuery.from(Operation.class);
 
         criteriaQuery.select(cb.construct(Operation.class,
-                entity.get("id"),
-                entity.get("sequence"),
-                entity.get("name")));
+                entity.get(Operation_.id),
+                entity.get(Operation_.sequence),
+                entity.get(Operation_.name)));
 
         br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class,
                 Long.parseLong(parameters.get("parentId").get(0)));
 
-        criteriaQuery.where(cb.equal(entity.get("process"), process.getId()));
+        criteriaQuery.where(cb.equal(entity.get(Operation_.process), process.getId()));
 
         return criteriaQuery;
     }

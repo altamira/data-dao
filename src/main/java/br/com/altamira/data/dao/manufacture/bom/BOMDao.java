@@ -174,7 +174,8 @@ public class BOMDao extends BaseDao<BOM> {
 
                 // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
                 //              function in group by sql clause
-                Date dt = DateAndTime.stripTimePortion(component.getItem().getBOM().getDelivery());
+                //Date dt = DateAndTime.stripTimePortion(component.getItem().getBOM().getDelivery());
+                java.sql.Date dt = new java.sql.Date(component.getItem().getBOM().getDelivery().getTime());
 
                 // set default delivery date
                 Delivery delivery = new Delivery(component, dt, component.getQuantity());

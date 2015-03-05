@@ -8,8 +8,11 @@ package br.com.altamira.data.dao.manufacture.execution;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.manufacture.execution.Component;
+import br.com.altamira.data.model.manufacture.execution.Component_;
 import br.com.altamira.data.model.manufacture.execution.Delivered;
 import br.com.altamira.data.model.manufacture.execution.Delivery;
+import br.com.altamira.data.model.manufacture.execution.Delivered_;
+import br.com.altamira.data.model.measurement.Measure_;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Set;
@@ -56,7 +59,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("component"),
+        criteriaQuery.where(cb.equal(entity.get(Delivered_.component),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;
@@ -95,9 +98,9 @@ public class DeliveredDao extends BaseDao<Delivered> {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
         Root<Delivered> root = criteria.from(Delivered.class);
-        Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
+        Expression<BigDecimal> sum = cb.sum(root.get(Delivered_.quantity).get(Measure_.value));
         criteria.select(sum);
-        criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
+        criteria.where(cb.equal(root.get(Delivered_.component).get(Component_.id), entity.getId()));
 
         Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
                 entity.getQuantity().getUnit());

@@ -11,6 +11,7 @@ import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.Component;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
+import br.com.altamira.data.model.manufacture.bom.Component_;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
@@ -135,7 +136,7 @@ public class ComponentDao extends BaseDao<Component> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("item"),
+        criteriaQuery.where(cb.equal(entity.get(Component_.item),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

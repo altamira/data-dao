@@ -9,6 +9,7 @@ package br.com.altamira.data.dao.shipping.planning;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
+import br.com.altamira.data.model.shipping.planning.Component_;
 import br.com.altamira.data.model.shipping.planning.Component;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class ComponentDao extends BaseDao<Component> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("item"),
+        criteriaQuery.where(cb.equal(entity.get(Component_.item),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

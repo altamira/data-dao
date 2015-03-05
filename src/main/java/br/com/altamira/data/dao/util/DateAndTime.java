@@ -5,7 +5,7 @@
  */
 package br.com.altamira.data.dao.util;
 
-import java.util.Date;
+//import java.util.Date;
 
 /**
  *
@@ -13,9 +13,10 @@ import java.util.Date;
  */
 public class DateAndTime {
 
-    public static Date stripTimePortion(Date timestamp) {
+    // ALTAMIRA-92: replaced by java.sql.Date
+    /*public static Date stripTimePortion(Date timestamp) {
         long msInDay = 1000 * 60 * 60 * 24; // Number of milliseconds in a day
         long msPortion = timestamp.getTime() % msInDay;
         return new Date(timestamp.getTime() - msPortion);
-    }
+    }*/
 }

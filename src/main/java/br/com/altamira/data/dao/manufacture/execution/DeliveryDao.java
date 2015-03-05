@@ -9,6 +9,7 @@ import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import br.com.altamira.data.model.manufacture.execution.Delivery;
+import br.com.altamira.data.model.manufacture.execution.Delivery_;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -40,7 +41,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("component"),
+        criteriaQuery.where(cb.equal(entity.get(Delivery_.component),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

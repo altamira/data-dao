@@ -8,6 +8,7 @@ package br.com.altamira.data.dao.common;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.common.Component;
 import br.com.altamira.data.model.measurement.Unit;
+import br.com.altamira.data.model.common.Component_;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -65,7 +66,7 @@ public class ComponentDao extends BaseDao<Component> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("material"),
+        criteriaQuery.where(cb.equal(entity.get(Component_.material),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

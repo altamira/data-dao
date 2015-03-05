@@ -7,7 +7,9 @@ package br.com.altamira.data.dao.measurement;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Magnitude;
+import br.com.altamira.data.model.measurement.Magnitude_;
 import br.com.altamira.data.model.measurement.Unit;
+import br.com.altamira.data.model.measurement.Unit_;
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -41,8 +43,8 @@ public class UnitDao extends BaseDao<Unit> {
                 && !parameters.get("magnitude").isEmpty()) {
             String searchCriteria = parameters.get("magnitude").get(0).toLowerCase().trim();
 
-            Join<Unit, Magnitude> magnitude = entity.join("magnitude");
-            criteriaQuery.where(cb.equal(cb.lower(magnitude.get("name")), searchCriteria));
+            Join<Unit, Magnitude> magnitude = entity.join(Unit_.magnitude);
+            criteriaQuery.where(cb.equal(cb.lower(magnitude.get(Magnitude_.name)), searchCriteria));
         }
 
         return criteriaQuery;

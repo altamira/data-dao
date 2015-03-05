@@ -8,6 +8,7 @@ package br.com.altamira.data.dao.common;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.common.MaterialBaseDao.CODE_VALIDATION;
 import br.com.altamira.data.model.common.MaterialAlias;
+import br.com.altamira.data.model.common.MaterialAlias_;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -41,7 +42,7 @@ public class MaterialAliasDao extends BaseDao<br.com.altamira.data.model.common.
         criteriaQuery.select(entity);
 
         criteriaQuery.where(
-                cb.equal(cb.lower(entity.get("code")), code.toLowerCase().trim()));
+                cb.equal(cb.lower(entity.get(MaterialAlias_.code)), code.toLowerCase().trim()));
 
         br.com.altamira.data.model.common.MaterialAlias material = null;
         
@@ -76,8 +77,8 @@ public class MaterialAliasDao extends BaseDao<br.com.altamira.data.model.common.
                     .toLowerCase().trim() + "%";
 
             criteriaQuery.where(cb.or(
-                    cb.like(cb.lower(entity.get("code")), searchCriteria),
-                    cb.like(cb.lower(entity.get("description")), searchCriteria)));
+                    cb.like(cb.lower(entity.get(MaterialAlias_.code)), searchCriteria),
+                    cb.like(cb.lower(entity.get(MaterialAlias_.description)), searchCriteria)));
         }
 
         return criteriaQuery;

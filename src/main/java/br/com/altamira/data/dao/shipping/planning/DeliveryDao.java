@@ -8,14 +8,17 @@ package br.com.altamira.data.dao.shipping.planning;
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.dao.util.DateAndTime;
 import br.com.altamira.data.model.measurement.Measure;
+import br.com.altamira.data.model.measurement.Measure_;
 import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
+import br.com.altamira.data.model.shipping.execution.Delivered_;
 import br.com.altamira.data.model.shipping.planning.Component;
+import br.com.altamira.data.model.shipping.planning.Component_;
 import br.com.altamira.data.model.shipping.planning.Delivery;
+import br.com.altamira.data.model.shipping.planning.Delivery_;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +56,8 @@ public class DeliveryDao extends BaseDao<Delivery> {
 
         // ALTAMIRA-92: trunc the time portion of the date to avoid to use non portable 'trunc()' 
         //              function in group by sql clause
-        entity.setDelivery(DateAndTime.stripTimePortion(entity.getDelivery()));
+        //entity.setDelivery(DateAndTime.stripTimePortion(entity.getDelivery()));
+        entity.setDelivery(new java.sql.Date(entity.getDelivery().getTime()));
     }
 
     /**
@@ -80,7 +84,7 @@ public class DeliveryDao extends BaseDao<Delivery> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("component"),
+        criteriaQuery.where(cb.equal(entity.get(Delivery_.component),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;
@@ -105,9 +109,9 @@ public class DeliveryDao extends BaseDao<Delivery> {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
         Root<Delivered> root = criteria.from(Delivered.class);
-        Expression<BigDecimal> sum = cb.sum(root.get("quantity").get("value"));
+        Expression<BigDecimal> sum = cb.sum(root.get(Delivered_.quantity).get(Measure_.value));
         criteria.select(sum);
-        criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
+        criteria.where(cb.equal(root.get(Delivered_.component).get(Component_.id), entity.getId()));
 
         Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
                 entity.getQuantity().getUnit());

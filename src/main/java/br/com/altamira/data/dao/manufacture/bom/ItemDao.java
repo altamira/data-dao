@@ -10,6 +10,7 @@ import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
 import br.com.altamira.data.model.manufacture.bom.Item;
+import br.com.altamira.data.model.manufacture.bom.Item_;
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -79,7 +80,7 @@ public class ItemDao extends BaseDao<Item> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("bom"),
+        criteriaQuery.where(cb.equal(entity.get(Item_.bom),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

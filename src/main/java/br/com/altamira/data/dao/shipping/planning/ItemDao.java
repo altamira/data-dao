@@ -9,6 +9,7 @@ package br.com.altamira.data.dao.shipping.planning;
 import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
+import br.com.altamira.data.model.shipping.planning.Item_;
 import br.com.altamira.data.model.shipping.planning.Item;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class ItemDao extends BaseDao<Item> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get("bom"),
+        criteriaQuery.where(cb.equal(entity.get(Item_.bom),
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;

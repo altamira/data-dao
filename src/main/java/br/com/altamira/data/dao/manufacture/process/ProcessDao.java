@@ -10,6 +10,7 @@ import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
 import br.com.altamira.data.model.manufacture.process.Process;
+import br.com.altamira.data.model.manufacture.process.Process_;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.measurement.Variables;
@@ -122,9 +123,9 @@ public class ProcessDao extends BaseDao<Process> {
         Root<Process> entity = criteriaQuery.from(Process.class);
 
         criteriaQuery.select(cb.construct(Process.class,
-                entity.get("id"),
-                entity.get("code"),
-                entity.get("description")));
+                entity.get(Process_.id),
+                entity.get(Process_.code),
+                entity.get(Process_.description)));
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {
@@ -132,13 +133,11 @@ public class ProcessDao extends BaseDao<Process> {
                     .toLowerCase().trim() + "%";
 
             criteriaQuery.where(cb.or(
-                    cb.like(cb.lower(entity.get("code")), searchCriteria),
-                    cb.like(cb.lower(entity.get("description")), searchCriteria)));
+                    cb.like(cb.lower(entity.get(Process_.code)), searchCriteria),
+                    cb.like(cb.lower(entity.get(Process_.description)), searchCriteria)));
         } else {
             // TODO: list pending processes        	
         }
-
-        criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
 
         return criteriaQuery;
     }

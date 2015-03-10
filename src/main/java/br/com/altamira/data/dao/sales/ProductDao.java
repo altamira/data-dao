@@ -15,6 +15,16 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless
 public class ProductDao extends MaterialBaseDao<Product> {
 
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Product entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    }
+    
     @Override
     public void resolveDependencies(Product entity, MultivaluedMap<String, String> parameters) {
 

@@ -19,6 +19,16 @@ import javax.ws.rs.core.MultivaluedMap;
 @Stateless(name = "sales.component.ComponentDao")
 public class ComponentDao extends MaterialBaseDao<Component> {
 
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Component entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    }
+    
     @Override
     public void resolveDependencies(Component entity, MultivaluedMap<String, String> parameters) {
 

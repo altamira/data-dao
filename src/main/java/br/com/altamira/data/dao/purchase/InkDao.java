@@ -16,4 +16,14 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class InkDao extends MaterialBaseDao<Ink> {
+    
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Ink entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    } 
 }

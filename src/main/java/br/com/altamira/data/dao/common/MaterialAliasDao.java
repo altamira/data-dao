@@ -9,7 +9,10 @@ import br.com.altamira.data.dao.BaseDao;
 import static br.com.altamira.data.dao.common.MaterialBaseDao.CODE_VALIDATION;
 import br.com.altamira.data.model.common.MaterialAlias;
 import br.com.altamira.data.model.common.MaterialAlias_;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -25,12 +28,25 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "common.MaterialAliasDao")
 public class MaterialAliasDao extends BaseDao<br.com.altamira.data.model.common.MaterialAlias> {
+
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(br.com.altamira.data.model.common.MaterialAlias entity) {
+        // Lazy load of items
+        if (entity.getMaterial() != null) {
+            entity.getMaterial().setComponent(null);
+        };
+    }
     
     /**
      *
      * @param code
      * @return
      */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public br.com.altamira.data.model.common.MaterialAlias find(
             @NotNull @Size(min = 3, message = CODE_VALIDATION) String code)
             throws ConstraintViolationException, NoResultException {
@@ -44,20 +60,25 @@ public class MaterialAliasDao extends BaseDao<br.com.altamira.data.model.common.
         criteriaQuery.where(
                 cb.equal(cb.lower(entity.get(MaterialAlias_.code)), code.toLowerCase().trim()));
 
-        br.com.altamira.data.model.common.MaterialAlias material = null;
+        br.com.altamira.data.model.common.MaterialAlias alias;
         
         try {
-            material = entityManager.createQuery(criteriaQuery).getSingleResult();
-    
-            lazyLoad(material);
-
+            alias = entityManager.createQuery(criteriaQuery).getSingleResult();
         } catch (NoResultException e) {
+            return null;
+        } catch (EJBException ejbex) {
+            if (ejbex.getCause() instanceof NoResultException) {
+                return null;
+            }
+            throw ejbex;
         }
 
-        return material;
+        lazyLoad(alias);
+
+        return alias;
     }
-    
-        /**
+
+    /**
      *
      * @param parameters
      * @return

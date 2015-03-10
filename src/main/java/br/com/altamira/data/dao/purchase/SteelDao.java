@@ -16,5 +16,14 @@ import javax.ejb.Stateless;
  */
 @Stateless(name = "purchase.SteelDao")
 public class SteelDao extends MaterialBaseDao<Steel> {
-    
+
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Steel entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    }    
 }

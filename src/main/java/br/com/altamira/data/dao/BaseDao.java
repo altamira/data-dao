@@ -13,9 +13,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -71,7 +72,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     public CriteriaQuery<T> fetchJoin(@Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id) {
         return null;
     }
-    
+
     /**
      *
      * @param entity
@@ -80,7 +81,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     public void resolveDependencies(T entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
 
     }
-    
+
     /**
      *
      * @param entity
@@ -89,7 +90,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
     public void updateDependencies(T entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
 
     }
-    
+
     /**
      *
      * @param parameters
@@ -102,8 +103,6 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         Root<T> entity = criteriaQuery.from(getTypeClass());
 
         criteriaQuery.select(entity);
-        
-        //criteriaQuery.orderBy(cb.desc(entity.get("lastModified")));
 
         return criteriaQuery;
     }
@@ -116,6 +115,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      * @return
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public List<T> list(
             @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
             @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
@@ -125,10 +125,9 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         CriteriaQuery<T> criteriaQuery = this.getCriteriaQuery(parameters);
 
         TypedQuery<T> query = entityManager.createQuery(criteriaQuery);
-        
+
         // TODO debug sql string
         //log.log(Level.INFO, query.unwrap(org.hibernate.Query.class).getQueryString());
-        
         return query
                 .setFirstResult(startPage * pageSize)
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
@@ -141,6 +140,8 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
      * @return
      */
     @Override
+    // requires transaction to get entity as managed and avoid detached object when try to lazy load dependencies
+    //@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) ->
     public T find(
             @Min(value = 0, message = ID_NOT_NULL_VALIDATION) long id)
             throws ConstraintViolationException, NoResultException {
@@ -155,12 +156,12 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         }
 
         CriteriaQuery<T> criteriaQuery = this.fetchJoin(id);
-        
+
         T entity;
-        
+
         if (criteriaQuery == null) {
             entity = entityManager.find(getTypeClass(), id);
-            if (entity == null) { 
+            if (entity == null) {
                 throw new NoResultException();
             }
             this.lazyLoad(entity);
@@ -206,7 +207,7 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entityManager.flush();
 
         this.updateDependencies(entity, parameters);
-        
+
         entity = entityManager.find(getTypeClass(), entity.getId());
 
         this.lazyLoad(entity);
@@ -247,9 +248,9 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
 
         entity = entityManager.merge(entity);
         entityManager.flush();
-        
+
         this.updateDependencies(entity, parameters);
-        
+
         entity = entityManager.find(getTypeClass(), entity.getId());
 
         this.lazyLoad(entity);
@@ -276,21 +277,21 @@ public abstract class BaseDao<T extends br.com.altamira.data.model.Entity> imple
         entity = entityManager.contains(entity) ? entity : entityManager.merge(entity);
         entityManager.remove(entity);
     }
-    
+
     /**
      *
      */
     @Override
     public void removeAll(
-            @NotNull List<T> entities) 
-            throws ConstraintViolationException, IllegalArgumentException{
-        
+            @NotNull List<T> entities)
+            throws ConstraintViolationException, IllegalArgumentException {
+
         entities.forEach((entity) -> {
             entityManager.remove(
                     entityManager.contains(entity) ? entity : entityManager.merge(entity));
         });
     }
-    
+
     /**
      * <p>
      * Validates the given Member variable and throws validation exceptions

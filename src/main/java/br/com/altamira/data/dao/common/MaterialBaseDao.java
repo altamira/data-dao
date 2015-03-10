@@ -7,7 +7,10 @@ package br.com.altamira.data.dao.common;
 
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.measurement.Unit;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -29,19 +32,6 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
      *
      */
     public static final String CODE_VALIDATION = "Code can't be null.";
-
-    /**
-     *
-     * @param entity
-     */
-    @Override
-    public void lazyLoad(T entity) {
-        // Lazy load of items
-        entity.getComponent().size();
-        entity.getComponent().forEach((component) -> {
-            component.getMaterial().setComponent(null);
-        });
-    }
 
     /**
      *
@@ -100,6 +90,7 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
      * @param code
      * @return
      */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public T find(
             @NotNull @Size(min = 3, message = CODE_VALIDATION) String code)
             throws ConstraintViolationException, NoResultException {
@@ -113,7 +104,18 @@ public abstract class MaterialBaseDao<T extends br.com.altamira.data.model.commo
         criteriaQuery.where(
                 cb.equal(cb.lower(entity.get("code")), code.toLowerCase().trim()));
 
-        T material = entityManager.createQuery(criteriaQuery).getSingleResult();
+        T material;
+
+        try {
+            material = entityManager.createQuery(criteriaQuery).getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (EJBException ejbex) {
+            if (ejbex.getCause() instanceof NoResultException) {
+                return null;
+            }
+            throw ejbex;
+        }
 
         lazyLoad(material);
 

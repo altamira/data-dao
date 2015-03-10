@@ -6,7 +6,6 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.dao.util.DateAndTime;
 import br.com.altamira.data.model.measurement.Measure;
 import br.com.altamira.data.model.measurement.Measure_;
 import br.com.altamira.data.model.measurement.Unit;

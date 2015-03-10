@@ -1,23 +1,18 @@
 package br.com.altamira.data.dao.manufacture.bom;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.dao.util.DateAndTime;
-import br.com.altamira.data.model.common.Color;
 import br.com.altamira.data.model.common.Material;
 import br.com.altamira.data.model.manufacture.bom.BOM;
 import br.com.altamira.data.model.manufacture.bom.BOM_;
 import br.com.altamira.data.model.manufacture.bom.Delivery;
 import br.com.altamira.data.model.manufacture.bom.Item;
 import br.com.altamira.data.model.measurement.Measure;
-import br.com.altamira.data.model.measurement.Unit;
 import br.com.altamira.data.model.shipping.execution.Delivered;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import javax.ejb.Stateless;
-
-import java.util.Date;
 import java.util.List;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -83,7 +78,7 @@ public class BOMDao extends BaseDao<BOM> {
                 component.setItem(item);
 
                 // resolve color
-                component.setColor(entityManager.find(Color.class, component.getColor().getId()));
+                //component.setColor(entityManager.find(Color.class, component.getColor().getId()));
 
                 // resolve material
                 Material material = null;
@@ -136,11 +131,11 @@ public class BOMDao extends BaseDao<BOM> {
                 component.setMaterial(material);
 
                 // resolve measurements
-                component.getQuantity().setUnit(entityManager.find(Unit.class, component.getQuantity().getUnit().getId()));
-                component.getWidth().setUnit(entityManager.find(Unit.class, component.getWidth().getUnit().getId()));
-                component.getHeight().setUnit(entityManager.find(Unit.class, component.getHeight().getUnit().getId()));
-                component.getLength().setUnit(entityManager.find(Unit.class, component.getLength().getUnit().getId()));
-                component.getWeight().setUnit(entityManager.find(Unit.class, component.getWeight().getUnit().getId()));
+                /*component.getQuantity().setUnit(entityManager.find(Unit.class, component.getQuantity().getUnit().getId()));
+                 component.getWidth().setUnit(entityManager.find(Unit.class, component.getWidth().getUnit().getId()));
+                 component.getHeight().setUnit(entityManager.find(Unit.class, component.getHeight().getUnit().getId()));
+                 component.getLength().setUnit(entityManager.find(Unit.class, component.getLength().getUnit().getId()));
+                 component.getWeight().setUnit(entityManager.find(Unit.class, component.getWeight().getUnit().getId()));*/
                 component.getDelivered().setUnit(component.getQuantity().getUnit());
                 component.getRemaining().setUnit(component.getQuantity().getUnit());
 
@@ -237,7 +232,7 @@ public class BOMDao extends BaseDao<BOM> {
         }
 
         criteriaQuery.orderBy(cb.asc(entity.get(BOM_.delivery)));
-        
+
         return criteriaQuery;
     }
 

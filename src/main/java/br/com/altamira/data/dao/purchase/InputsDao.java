@@ -15,5 +15,14 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class InputsDao extends MaterialBaseDao<Inputs> {
-    
+
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Inputs entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    }     
 }

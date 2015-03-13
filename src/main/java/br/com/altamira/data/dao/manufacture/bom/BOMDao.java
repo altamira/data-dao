@@ -148,8 +148,7 @@ public class BOMDao extends BaseDao<BOM> {
                     criteria.select(sum);
                     criteria.where(cb.equal(root.get("component").get("id"), entity.getId()));
 
-                    Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(),
-                            component.getQuantity().getUnit());
+                    Measure delivered = new Measure(entityManager.createQuery(criteria).getSingleResult(), component.getQuantity().getUnit());
 
                     component.setDelivered(delivered);
 

@@ -16,11 +16,13 @@ import br.com.altamira.data.model.shipping.execution.Item;
 import br.com.altamira.data.model.shipping.execution.Item_;
 import br.com.altamira.data.model.shipping.execution.Remaining;
 import br.com.altamira.data.model.shipping.execution.Delivery_;
+import br.com.altamira.data.model.shipping.execution.PackingList;
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
@@ -107,6 +109,10 @@ public class BOMDao extends BaseDao<BOM> {
     @Override
     public void lazyLoad(BOM entity) {
         // Lazy load of items
+        if (entity.getPackingList() != null) {
+            entity.getPackingList().size();
+        }
+        
         if (entity.getItem() != null) {
             entity.getItem().size();
 

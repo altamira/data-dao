@@ -11,4 +11,13 @@ import br.com.altamira.data.model.common.Material;
 @Stateless(name = "common.MaterialDao")
 public class MaterialDao extends MaterialBaseDao<Material> {
 
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Material entity) {
+        // Lazy load of items
+        entity.setComponent(null);
+    }
 }

@@ -80,8 +80,22 @@ public class ItemDao extends BaseDao<Item> {
 
         criteriaQuery.select(entity);
 
-        criteriaQuery.where(cb.equal(entity.get(Item_.bom),
-                Long.parseLong(parameters.get("parentId").get(0))));
+        if (parameters.get("item") != null
+                && !parameters.get("item").isEmpty()
+                && !parameters.get("item").get(0).isEmpty()) {
+
+            criteriaQuery.where(cb.and(
+                    cb.equal(entity.get(Item_.bom),
+                            Long.parseLong(parameters.get("parentId").get(0))),
+                    cb.equal(entity.get(Item_.item),
+                            Long.parseLong(parameters.get("item").get(0)))));
+
+        } else {
+
+            criteriaQuery.where(cb.equal(entity.get(Item_.bom),
+                    Long.parseLong(parameters.get("parentId").get(0))));
+
+        }
 
         return criteriaQuery;
     }

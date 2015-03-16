@@ -17,12 +17,14 @@ import br.com.altamira.data.model.shipping.execution.Item_;
 import br.com.altamira.data.model.shipping.execution.Remaining;
 import br.com.altamira.data.model.shipping.execution.Delivery_;
 import br.com.altamira.data.model.shipping.execution.PackingList;
+
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Fetch;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
@@ -52,6 +54,7 @@ public class BOMDao extends BaseDao<BOM> {
         //SetJoin<BOM, PackingList> packingList = (SetJoin<BOM, PackingList>) fetch;
 
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
+        SetJoin<BOM, PackingList> packingList = (SetJoin<BOM, PackingList>) bom.fetch(BOM_.packingList, JoinType.LEFT);
         SetJoin<Item, Component> component = item.join(Item_.component);
         SetJoin<Component, Delivery> delivery = component.join(Component_.delivery);
 
@@ -72,13 +75,7 @@ public class BOMDao extends BaseDao<BOM> {
          cb.sum(component.get("quantity").get("value")), 
          cb.sum(component.get("delivered").get("value")) ) );
          */
-        criteriaQuery.select(cb.construct(BOM.class,
-                bom.get(BOM_.id),
-                bom.get(BOM_.number),
-                bom.get(BOM_.customer),
-                bom.get(BOM_.created),
-                bom.get(BOM_.delivery)/*,
-         packingList.get(PackingList_.id)*/)).distinct(true);
+        criteriaQuery.select(bom);
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()

@@ -13,6 +13,8 @@ import br.com.altamira.data.model.shipping.execution.Component_;
 import br.com.altamira.data.model.shipping.execution.Delivered;
 import br.com.altamira.data.model.shipping.execution.Delivered_;
 import br.com.altamira.data.model.shipping.execution.Delivery;
+import br.com.altamira.data.model.shipping.execution.PackingList;
+import br.com.altamira.data.model.shipping.execution.PackingList_;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Set;
@@ -85,6 +87,27 @@ public class DeliveredDao extends BaseDao<Delivered> {
     @Override
     public void updateDependencies(Delivered entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
         calculateRemainingAndDelivered(entity.getComponent());
+        
+        /* ALTAMIRA-116 */
+        // Update Delivered's weight
+        BigDecimal componentUnitWeight = entity.getComponent().getWeight().getValue().divide(entity.getComponent().getQuantity().getValue());
+        BigDecimal deliveredWeight = componentUnitWeight.multiply(entity.getQuantity().getValue());
+        entity.getWeight().setValue(deliveredWeight);
+        
+        // Update PackingList's weight
+        PackingList packingList = entity.getPackingList();
+        
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
+        Root<Delivered> root = criteria.from(Delivered.class);
+        criteria.select(cb.sum(root.get(Delivered_.weight).get(Measure_.value)));
+        criteria.where(cb.equal(root.get(Delivered_.packingList).get(PackingList_.id), entity.getPackingList().getId()));
+
+        BigDecimal packingListWeight = entityManager.createQuery(criteria).getSingleResult();
+        packingList.getWeight().setValue(packingListWeight);
+        
+        entityManager.persist(entity);
+        entityManager.flush();
     }
 
     /**

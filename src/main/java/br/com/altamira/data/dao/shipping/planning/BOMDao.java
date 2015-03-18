@@ -88,7 +88,8 @@ public class BOMDao extends BaseDao<BOM> {
                 bom.get(BOM_.number),
                 bom.get(BOM_.customer),
                 bom.get(BOM_.created),
-                bom.get(BOM_.delivery))).distinct(true);
+                bom.get(BOM_.delivery),
+                bom.get(BOM_.status))).distinct(true);
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()

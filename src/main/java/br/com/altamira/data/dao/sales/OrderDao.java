@@ -10,7 +10,7 @@ import br.com.altamira.data.model.sales.Order;
  * Sales order persistency strategy
  *
  */
-@Stateless
+@Stateless(name = "br.com.altamira.data.dao.sales.OrderDao")
 public class OrderDao extends BaseDao<Order> {
 
 }

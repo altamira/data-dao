@@ -10,12 +10,28 @@ import static br.com.altamira.data.dao.Dao.PAGE_SIZE_VALIDATION;
 import static br.com.altamira.data.dao.Dao.PARAMETER_VALIDATION;
 import static br.com.altamira.data.dao.Dao.START_PAGE_VALIDATION;
 import br.com.altamira.data.model.manufacture.planning.BOM;
+import br.com.altamira.data.model.manufacture.planning.BOM_;
+import br.com.altamira.data.model.manufacture.planning.Component;
+import br.com.altamira.data.model.manufacture.planning.Component_;
+import br.com.altamira.data.model.manufacture.planning.Item;
+import br.com.altamira.data.model.manufacture.planning.Item_;
 import br.com.altamira.data.model.manufacture.planning.Order;
+import br.com.altamira.data.model.manufacture.planning.Order_;
+import br.com.altamira.data.model.manufacture.planning.Produce;
+import br.com.altamira.data.model.manufacture.planning.Produce_;
+
 import java.util.List;
+
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.ListJoin;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -33,7 +49,7 @@ public class OrderDao extends BaseDao<Order> {
      * @param parameters
      * @return
      */
-    public CriteriaQuery<BOM> getBOMQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    public CriteriaQuery<Order> getBOMQuery(@NotNull MultivaluedMap<String, String> parameters) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
         // TODO: 
@@ -53,11 +69,31 @@ public class OrderDao extends BaseDao<Order> {
         // WHERE
         //   MN_ORDER.ID = 65497;
   
-        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
-        Root<BOM> bom = criteriaQuery.from(BOM.class);
+        CriteriaQuery<Order> criteriaQuery = cb.createQuery(Order.class);
+        Root<Order> order = criteriaQuery.from(Order.class);
+        
+        ListJoin<Order, Produce> produce = order.join(Order_.produce);
+        Join<Produce, Component> component = produce.join(Produce_.component);
+        Join<Component, Item> item = component.join(Component_.item);
+        Join<Item, BOM> bom = item.join(Item_.bom);
+        
+        criteriaQuery.select(order);
 
-        criteriaQuery.select(bom);
-
+        if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()
+                && !parameters.get("search").get(0).isEmpty()) {
+        	String searchCriteria = "%" + parameters.get("search").get(0)
+                    .toLowerCase().trim() + "%";
+        	
+        	criteriaQuery.where(cb.or(
+        			cb.like(cb.lower(bom.get(BOM_.number).as(String.class)), searchCriteria),
+                    cb.like(cb.lower(bom.get(BOM_.customer)), searchCriteria),
+                    cb.like(cb.lower(order.get(Order_.id).as(String.class)), searchCriteria)));
+        	
+        }
+        
+        criteriaQuery.orderBy(cb.asc(order.get(Order_.id)));
+        
         return criteriaQuery;
     }
 
@@ -68,7 +104,7 @@ public class OrderDao extends BaseDao<Order> {
      * @param pageSize
      * @return
      */
-    public List<BOM> listBOM(
+    public List<Order> listBOM(
             @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
             @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
             @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
@@ -79,4 +115,23 @@ public class OrderDao extends BaseDao<Order> {
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
     }    
+    
+    @Override
+    public List<Order> list(
+            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+            @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+            throws ConstraintViolationException {
+
+    	if (parameters.get("search") != null
+                && !parameters.get("search").isEmpty()
+                && !parameters.get("search").get(0).isEmpty()) {
+    		
+    		return this.listBOM(parameters, startPage, pageSize);
+    	}
+    	else
+    	{
+    		return super.list(parameters, startPage, pageSize);
+    	}
+    }
 }

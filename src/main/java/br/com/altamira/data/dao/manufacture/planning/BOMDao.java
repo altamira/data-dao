@@ -5,13 +5,22 @@ import static br.com.altamira.data.dao.Dao.ENTITY_VALIDATION;
 import static br.com.altamira.data.dao.Dao.ID_NOT_NULL_VALIDATION;
 import br.com.altamira.data.model.manufacture.planning.BOM;
 import br.com.altamira.data.model.manufacture.planning.BOM_;
+import br.com.altamira.data.model.manufacture.planning.Component;
+import br.com.altamira.data.model.manufacture.planning.Component_;
 import br.com.altamira.data.model.manufacture.planning.Item;
+import br.com.altamira.data.model.manufacture.planning.Item_;
+import br.com.altamira.data.model.manufacture.planning.Order;
+import br.com.altamira.data.model.manufacture.planning.Order_;
+import br.com.altamira.data.model.manufacture.planning.Produce;
+import br.com.altamira.data.model.manufacture.planning.Produce_;
 
 import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.ListJoin;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.ConstraintViolationException;
@@ -37,31 +46,21 @@ public class BOMDao extends BaseDao<BOM> {
 
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
         Root<BOM> bom = criteriaQuery.from(BOM.class);
-        //Fetch<BOM, PackingList> fetch = bom.fetch(BOM_.packingList, JoinType.LEFT);
-        //SetJoin<BOM, PackingList> packingList = (SetJoin<BOM, PackingList>) fetch;
 
         SetJoin<BOM, Item> item = bom.join(BOM_.item);
-        //SetJoin<Item, Component> component = item.join(Item_.component);
-        //SetJoin<Component, Produce> produce = component.join(Component_.produce);
+        SetJoin<Item, Component> component = item.join(Item_.component);
+        ListJoin<Component, Produce> produce = component.join(Component_.produce);
+        Join<Produce, Order> orderProduce = produce.join(Produce_.order);
 
-        /* ALTAMIRA-56, ALTAMIRA-82: remove this to get only the BOM headers list
-         Fetch<BOM, Item> fetch = bom.fetch("item");
-         SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) fetch;
-
-         Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
-         Root<Component> component = subQuery.from(Component.class);
-         subQuery.select(item.get("id"));
-         subQuery.where(cb.and(
-         cb.equal(component.get("item").get("id"), item.get("id")), 
-         cb.gt(item.get("id"), 0)));
-
-         subQuery.groupBy(component.get("item").get("id"));
-         subQuery.having( 
-         cb.gt( 
-         cb.sum(component.get("quantity").get("value")), 
-         cb.sum(component.get("delivered").get("value")) ) );
-         */
-        criteriaQuery.select(bom);
+        criteriaQuery.select(cb.construct(BOM.class, 
+        		bom.get(BOM_.id),
+        		bom.get(BOM_.type),
+        		bom.get(BOM_.number),
+        		bom.get(BOM_.customer),
+        		bom.get(BOM_.created),
+        		bom.get(BOM_.delivery))).distinct(true);
+        
+        criteriaQuery.where(cb.equal(orderProduce.get(Order_.id), parameters.get("id").get(0)));
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()
@@ -72,14 +71,8 @@ public class BOMDao extends BaseDao<BOM> {
             criteriaQuery.where(cb.or(
                     cb.like(cb.lower(bom.get(BOM_.number).as(String.class)), searchCriteria),
                     cb.like(cb.lower(bom.get(BOM_.customer)), searchCriteria)));
-        } else {
-            //criteriaQuery.where(cb.equal(item.get("id"), subQuery));
-            criteriaQuery.where(cb.and(
-                    //cb.gt(delivery.get(Delivery_.remaining).get(Measure_.value), 0),
-                    //cb.isNotNull(bom.get(BOM_.checked)),
-                    /*cb.gt(item.get(Item_.item), 0)*/));
         }
-
+        
         criteriaQuery.orderBy(cb.asc(bom.get(BOM_.delivery)));
 
         return criteriaQuery;

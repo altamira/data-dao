@@ -98,7 +98,7 @@ public class OperationDao extends BaseDao<Operation> {
         //  MN_BOM 
         //    INNER JOIN MN_BOM_ITEM ON MN_BOM.ID = MN_BOM_ITEM.BOM
         //    INNER JOIN MN_BOM_ITEM_CMP ON MN_BOM_ITEM.ID = MN_BOM_ITEM_CMP.ITEM
-        //    INNER JOIN MN_ORDER_ITEM_CMP ON MN_BOM_ITEM_CMP.ID = MN_ORDER_ITEM_CMP.COMPONENT
+        //    --INNER JOIN MN_ORDER_ITEM_CMP ON MN_BOM_ITEM_CMP.ID = MN_ORDER_ITEM_CMP.COMPONENT
         //    INNER JOIN SL_COMPONENT ON MN_BOM_ITEM_CMP.MATERIAL = SL_COMPONENT.ID
         //    INNER JOIN MN_PROCESS ON SL_COMPONENT.PROCESS = MN_PROCESS.ID
         //    INNER JOIN MN_PROCESS_OPERATION ON MN_PROCESS_OPERATION.PROCESS = MN_PROCESS.ID
@@ -107,9 +107,30 @@ public class OperationDao extends BaseDao<Operation> {
         //  MN_OPERATION.ID = 10500;
   
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+        
         Root<BOM> bom = criteriaQuery.from(BOM.class);
+        Root<Item> item = criteriaQuery.from(Item.class);
+        Root<Component> component = criteriaQuery.from(Component.class);
+        Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+        Root<Process> process = criteriaQuery.from(Process.class);
+        Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
+        Root<Operation> operation = criteriaQuery.from(Operation.class);
 
-        criteriaQuery.select(bom);
+        criteriaQuery.select(cb.construct(BOM.class,
+        		bom.get(BOM_.id),
+        		bom.get(BOM_.type),
+        		bom.get(BOM_.number),
+        		bom.get(BOM_.customer),
+        		bom.get(BOM_.created),
+        		bom.get(BOM_.delivery))).distinct(true);
+        
+        criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
+        		cb.equal(item.get(Item_.id), component.get(Component_.item)),
+        		cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
+        		cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+        		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
+        		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
+        		cb.equal(operation.get(Operation_.id), parameters.get("id").get(0)));
 
         return criteriaQuery;
     }

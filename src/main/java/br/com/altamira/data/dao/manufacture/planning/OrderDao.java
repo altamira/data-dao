@@ -29,6 +29,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.ListJoin;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
@@ -72,12 +73,12 @@ public class OrderDao extends BaseDao<Order> {
         CriteriaQuery<Order> criteriaQuery = cb.createQuery(Order.class);
         Root<Order> order = criteriaQuery.from(Order.class);
         
-        ListJoin<Order, Produce> produce = order.join(Order_.produce);
-        Join<Produce, Component> component = produce.join(Produce_.component);
-        Join<Component, Item> item = component.join(Component_.item);
-        Join<Item, BOM> bom = item.join(Item_.bom);
+        ListJoin<Order, Produce> produce = order.join(Order_.produce, JoinType.LEFT);
+        Join<Produce, Component> component = produce.join(Produce_.component, JoinType.LEFT);
+        Join<Component, Item> item = component.join(Component_.item, JoinType.LEFT);
+        Join<Item, BOM> bom = item.join(Item_.bom, JoinType.LEFT);
         
-        criteriaQuery.select(order);
+        criteriaQuery.select(order).distinct(true);
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()

@@ -27,6 +27,10 @@ import br.com.altamira.data.model.manufacture.planning.Item;
 import br.com.altamira.data.model.manufacture.planning.Item_;
 import br.com.altamira.data.model.manufacture.planning.Operation;
 import br.com.altamira.data.model.manufacture.planning.Operation_;
+import br.com.altamira.data.model.manufacture.planning.Order;
+import br.com.altamira.data.model.manufacture.planning.Order_;
+import br.com.altamira.data.model.manufacture.planning.Produce;
+import br.com.altamira.data.model.manufacture.planning.Produce_;
 import br.com.altamira.data.model.manufacture.process.Process;
 import br.com.altamira.data.model.manufacture.process.Process_;
 
@@ -298,6 +302,43 @@ public class OperationDao extends BaseDao<Operation> {
 	   return entityManager.createQuery(this.getBOMItemComponentQuery(parameters))
 			   .setFirstResult(startPage * pageSize)
 			   .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+			   .getResultList();
+   }
+   
+   public CriteriaQuery<Component> getOperationReportQuery(Long orderID, Long operationId) {
+	   CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+	   CriteriaQuery<Component> criteriaQuery = cb.createQuery(Component.class);
+	   Root<BOM> bom = criteriaQuery.from(BOM.class);
+	   Root<Item> item = criteriaQuery.from(Item.class);
+	   Root<Component> component = criteriaQuery.from(Component.class);
+	   Root<Produce> produce = criteriaQuery.from(Produce.class);
+	   Root<Order> order = criteriaQuery.from(Order.class);
+	   Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+	   Root<Process> process = criteriaQuery.from(Process.class);
+	   Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
+	   Root<Operation> operation = criteriaQuery.from(Operation.class);
+
+	   criteriaQuery.select(component).distinct(true);
+
+	   criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
+			   cb.equal(item.get(Item_.id), component.get(Component_.item)),
+			   cb.equal(component.get(Item_.id), produce.get(Produce_.component)),
+			   cb.equal(order.get(Order_.id), produce.get(Produce_.order)),
+			   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
+			   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
+			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
+			   cb.equal(order.get(Order_.id), orderID),
+			   cb.equal(operation.get(Operation_.id), operationId));
+
+	   return criteriaQuery;
+   }
+   
+   public List<Component> getOperationDataForReport(Long orderID, Long operationId)
+				   throws ConstraintViolationException {
+
+	   return entityManager.createQuery(this.getOperationReportQuery(orderID,operationId))
 			   .getResultList();
    }
 }

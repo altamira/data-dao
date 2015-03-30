@@ -305,6 +305,83 @@ public class OperationDao extends BaseDao<Operation> {
 			   .getResultList();
    }
    
+   //ALTAMIRA-161 : Manufacture Planning - Operation summary
+   /**
+    *
+    * @param parameters
+    * @return
+    */
+   public CriteriaQuery<Operation> ListSummaryQuery(@NotNull MultivaluedMap<String, String> parameters) {
+	   CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+	   // TODO: 
+	   // ALTAMIRA-161:
+	   // ------------------------------------------------------------------------------------
+	   //SELECT DISTINCT 
+	   //MN_OPERATION.ID, MIN(MN_OPERATION.DESCRIPTION), MN_ORDER_ITEM_CMP.START_DATE, SUM(MN_ORDER_ITEM_CMP.QUANTITY)
+	   //FROM 
+	   //  MN_BOM 
+	   //    INNER JOIN MN_BOM_ITEM ON MN_BOM.ID = MN_BOM_ITEM.BOM
+	   //    INNER JOIN MN_BOM_ITEM_CMP ON MN_BOM_ITEM.ID = MN_BOM_ITEM_CMP.ITEM
+	   //    INNER JOIN MN_ORDER_ITEM_CMP ON MN_BOM_ITEM_CMP.ID = MN_ORDER_ITEM_CMP.COMPONENT
+	   //    INNER JOIN SL_COMPONENT ON MN_BOM_ITEM_CMP.MATERIAL = SL_COMPONENT.ID
+	   //    INNER JOIN MN_PROCESS ON SL_COMPONENT.PROCESS = MN_PROCESS.ID
+	   //    INNER JOIN MN_PROCESS_OPERATION ON MN_PROCESS_OPERATION.PROCESS = MN_PROCESS.ID
+	   //    INNER JOIN MN_OPERATION ON MN_PROCESS_OPERATION.OPERATION = MN_OPERATION.ID
+	   //    INNER JOIN MR_RESOURCE ON MR_RESOURCE.ID = MN_BOM_ITEM_CMP.ID
+	   //GROUP BY
+	   //  MN_OPERATION.ID, MN_ORDER_ITEM_CMP.START_DATE;
+
+	   CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class);
+	   Root<BOM> bom = criteriaQuery.from(BOM.class);
+	   Root<Item> item = criteriaQuery.from(Item.class);
+	   Root<Component> component = criteriaQuery.from(Component.class);
+	   Root<Produce> produce = criteriaQuery.from(Produce.class);
+	   Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+	   Root<Process> process = criteriaQuery.from(Process.class);
+	   Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
+	   Root<Operation> operation = criteriaQuery.from(Operation.class);
+
+	   criteriaQuery.select(cb.construct(Operation.class, 
+			   operation.get(Operation_.id),
+			   cb.min(operation.get("description")),
+			   produce.get(Produce_.startDate),
+			   cb.sum(produce.get("quantity").get("value")),
+			   cb.min(produce.get("quantity").get("unit"))));
+
+	   criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
+			   cb.equal(item.get(Item_.id), component.get(Component_.item)),
+			   cb.equal(component.get(Item_.id), produce.get(Produce_.component)),
+			   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
+			   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
+			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)));
+
+	   criteriaQuery.groupBy(operation.get(Operation_.id),produce.get(Produce_.startDate));
+
+	   return criteriaQuery;
+   }
+
+   /**
+    *
+    * @param parameters
+    * @param startPage
+    * @param pageSize
+    * @return
+    */
+   public List<Operation> listSummary(
+		   @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+		   @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+		   @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+				   throws ConstraintViolationException {
+
+	   return entityManager.createQuery(this.ListSummaryQuery(parameters))
+			   .setFirstResult(startPage * pageSize)
+			   .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+			   .getResultList();
+
+   }
+   
    public CriteriaQuery<Component> getOperationReportQuery(Long orderID, Long operationId) {
 	   CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 

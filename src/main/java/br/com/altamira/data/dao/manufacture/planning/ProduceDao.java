@@ -15,5 +15,5 @@ import javax.ejb.Stateless;
  */
 @Stateless(name = "br.com.altamira.data.dao.manufacture.planning.ProduceDao")
 public class ProduceDao extends BaseDao<Produce> {
-    
+
 }

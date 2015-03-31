@@ -22,7 +22,7 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author alessandro.holanda
  */
-@Stateless
+@Stateless(name = "br.com.altamira.data.dao.manufacture.process.ProcessDao")
 public class ProcessDao extends BaseDao<Process> {
 
     /**

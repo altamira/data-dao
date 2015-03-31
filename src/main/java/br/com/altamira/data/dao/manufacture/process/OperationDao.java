@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -105,11 +106,14 @@ public class OperationDao extends BaseDao<Operation> {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class);
         Root<Operation> entity = criteriaQuery.from(Operation.class);
+        Join<br.com.altamira.data.model.manufacture.process.Operation, 
+                br.com.altamira.data.model.manufacture.Operation> operation = 
+                entity.join(br.com.altamira.data.model.manufacture.process.Operation_.operation);
 
         criteriaQuery.select(cb.construct(Operation.class,
                 entity.get(Operation_.id),
                 entity.get(Operation_.sequence),
-                entity.get(Operation_.name)));
+                entity.get(Operation_.operation)));
 
         br.com.altamira.data.model.manufacture.process.Process process = entityManager.find(br.com.altamira.data.model.manufacture.process.Process.class,
                 Long.parseLong(parameters.get("parentId").get(0)));

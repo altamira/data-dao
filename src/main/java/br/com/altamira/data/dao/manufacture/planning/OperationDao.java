@@ -63,14 +63,14 @@ public class OperationDao extends BaseDao<Operation> {
         //    INNER JOIN SL_COMPONENT ON MN_BOM_ITEM_CMP.MATERIAL = SL_COMPONENT.ID
         //    INNER JOIN MN_PROCESS ON SL_COMPONENT.PROCESS = MN_PROCESS.ID
         //    INNER JOIN MN_PROCESS_OPERATION ON MN_PROCESS_OPERATION.PROCESS = MN_PROCESS.ID
-        //    INNER JOIN MN_OPERATION ON MN_PROCESS_OPERATION.OPERATION = MN_OPERATION.ID;
+        //    INNER JOIN MN_OPERATION ON MN_PROCESS_OPERATION.OPERATION = MN_OPERATION.ID; 
   
         CriteriaQuery<Operation> criteriaQuery = cb.createQuery(Operation.class);
         
         Root<BOM> bom = criteriaQuery.from(BOM.class);
         Root<Item> item = criteriaQuery.from(Item.class);
         Root<Component> component = criteriaQuery.from(Component.class);
-        Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+        Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
         Root<Process> process = criteriaQuery.from(Process.class);
         Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
         Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -79,8 +79,8 @@ public class OperationDao extends BaseDao<Operation> {
         
         criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
         		cb.equal(item.get(Item_.id), component.get(Component_.item)),
-        		cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-        		cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+        		cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+        		cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
         		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
         		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)));
         
@@ -117,7 +117,7 @@ public class OperationDao extends BaseDao<Operation> {
         Root<BOM> bom = criteriaQuery.from(BOM.class);
         Root<Item> item = criteriaQuery.from(Item.class);
         Root<Component> component = criteriaQuery.from(Component.class);
-        Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+        Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
         Root<Process> process = criteriaQuery.from(Process.class);
         Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
         Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -132,8 +132,8 @@ public class OperationDao extends BaseDao<Operation> {
         
         criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
         		cb.equal(item.get(Item_.id), component.get(Component_.item)),
-        		cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-        		cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+        		cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+        		cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
         		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
         		cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
         		cb.equal(operation.get(Operation_.id), parameters.get("id").get(0)));
@@ -191,7 +191,7 @@ public class OperationDao extends BaseDao<Operation> {
        Root<BOM> bom = criteriaQuery.from(BOM.class);
        Root<Item> item = criteriaQuery.from(Item.class);
        Root<Component> component = criteriaQuery.from(Component.class);
-       Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+       Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
        Root<Process> process = criteriaQuery.from(Process.class);
        Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
        Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -203,8 +203,8 @@ public class OperationDao extends BaseDao<Operation> {
        
        criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
     		   cb.equal(item.get(Item_.id), component.get(Component_.item)),
-    		   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-    		   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+    		   cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+    		   cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
     		   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
     		   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
     		   cb.equal(operation.get(Operation_.id), parameters.get("id").get(0)),
@@ -266,7 +266,7 @@ public class OperationDao extends BaseDao<Operation> {
 	   Root<BOM> bom = criteriaQuery.from(BOM.class);
 	   Root<Item> item = criteriaQuery.from(Item.class);
 	   Root<Component> component = criteriaQuery.from(Component.class);
-	   Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+	   Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
 	   Root<Process> process = criteriaQuery.from(Process.class);
 	   Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
 	   Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -275,8 +275,8 @@ public class OperationDao extends BaseDao<Operation> {
 
 	   criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
 			   cb.equal(item.get(Item_.id), component.get(Component_.item)),
-			   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-			   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+			   cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+			   cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
 			   cb.equal(operation.get(Operation_.id), parameters.get("id").get(0)),
@@ -337,7 +337,7 @@ public class OperationDao extends BaseDao<Operation> {
 	   Root<Item> item = criteriaQuery.from(Item.class);
 	   Root<Component> component = criteriaQuery.from(Component.class);
 	   Root<Produce> produce = criteriaQuery.from(Produce.class);
-	   Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+	   Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
 	   Root<Process> process = criteriaQuery.from(Process.class);
 	   Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
 	   Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -352,8 +352,8 @@ public class OperationDao extends BaseDao<Operation> {
 	   criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
 			   cb.equal(item.get(Item_.id), component.get(Component_.item)),
 			   cb.equal(component.get(Item_.id), produce.get(Produce_.component)),
-			   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-			   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+			   cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+			   cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)));
 
@@ -391,7 +391,7 @@ public class OperationDao extends BaseDao<Operation> {
 	   Root<Component> component = criteriaQuery.from(Component.class);
 	   Root<Produce> produce = criteriaQuery.from(Produce.class);
 	   Root<Order> order = criteriaQuery.from(Order.class);
-	   Root<br.com.altamira.data.model.sales.Component> salesComponent = criteriaQuery.from(br.com.altamira.data.model.sales.Component.class);
+	   Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
 	   Root<Process> process = criteriaQuery.from(Process.class);
 	   Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = criteriaQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
 	   Root<Operation> operation = criteriaQuery.from(Operation.class);
@@ -402,8 +402,8 @@ public class OperationDao extends BaseDao<Operation> {
 			   cb.equal(item.get(Item_.id), component.get(Component_.item)),
 			   cb.equal(component.get(Item_.id), produce.get(Produce_.component)),
 			   cb.equal(order.get(Order_.id), produce.get(Produce_.order)),
-			   cb.equal(component.get(Component_.material), salesComponent.get(br.com.altamira.data.model.sales.Component_.id)),
-			   cb.equal(salesComponent.get(br.com.altamira.data.model.sales.Component_.process), process.get(Process_.id)),
+			   cb.equal(component.get(Component_.material), material.get(br.com.altamira.data.model.common.Material_.id)),
+			   cb.equal(material.get(br.com.altamira.data.model.common.Material_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
 			   cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
 			   cb.equal(order.get(Order_.id), orderID),

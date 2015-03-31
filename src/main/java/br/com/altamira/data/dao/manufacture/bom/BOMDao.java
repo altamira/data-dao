@@ -104,8 +104,10 @@ public class BOMDao extends BaseDao<BOM> {
                         switch (component.getMaterial().getCode().substring(0, 3).toUpperCase()) {
                             case "ALP":
                                 material = new br.com.altamira.data.model.purchase.Steel(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                                break;
                             case "TPO":
                                 material = new br.com.altamira.data.model.purchase.Ink(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                                break;
                             default:
                                 material = new br.com.altamira.data.model.purchase.Inputs(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
                         }
@@ -113,8 +115,10 @@ public class BOMDao extends BaseDao<BOM> {
                         switch (component.getMaterial().getCode().substring(0, 3).toUpperCase()) {
                             case "ALP":
                                 material = new br.com.altamira.data.model.purchase.Steel(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                                break;
                             case "TPO":
                                 material = new br.com.altamira.data.model.purchase.Ink(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
+                                break;
                             default:
                                 material = new br.com.altamira.data.model.sales.Component(0l, component.getMaterial().getCode(), component.getMaterial().getDescription());
                         }

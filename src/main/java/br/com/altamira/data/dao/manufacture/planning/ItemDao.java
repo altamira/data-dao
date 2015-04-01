@@ -63,11 +63,6 @@ public class ItemDao extends BaseDao<Item> {
         // Lazy load of items
         if (entity.getComponent() != null) {
             entity.getComponent().size();
-            entity.getComponent().stream().forEach((component) -> {
-                if (component.getMaterial() != null) {
-                    component.getMaterial().setComponent(null);
-                }
-            });
         }
     }
     

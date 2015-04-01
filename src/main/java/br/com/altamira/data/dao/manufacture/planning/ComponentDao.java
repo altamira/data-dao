@@ -29,19 +29,6 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "br.com.altamira.data.dao.manufacture.planning.ComponentDao")
 public class ComponentDao extends BaseDao<Component> {
-    
-    /**
-     *
-     * @param entity
-     */
-    @Override
-    public void lazyLoad(Component entity) {
-        // Lazy load of items
-        if (entity.getMaterial() != null) {
-            entity.getMaterial().setComponent(null);
-        }
-
-    }
 
     /**
      *

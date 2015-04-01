@@ -335,7 +335,7 @@ public class OperationDao extends BaseDao<Operation> {
 
         criteriaQuery.select(cb.construct(Operation.class,
                 operation.get(Operation_.id),
-                cb.min(operation.get("description")),
+                cb.min(operation.get("name")),
                 produce.get(Produce_.startDate),
                 cb.sum(produce.get("quantity").get("value")),
                 cb.min(produce.get("quantity").get("unit"))));

@@ -25,6 +25,8 @@ import br.com.altamira.data.model.manufacture.planning.Component;
 import br.com.altamira.data.model.manufacture.planning.Component_;
 import br.com.altamira.data.model.manufacture.planning.Item;
 import br.com.altamira.data.model.manufacture.planning.Item_;
+import br.com.altamira.data.model.manufacture.planning.Material;
+import br.com.altamira.data.model.manufacture.planning.Material_;
 import br.com.altamira.data.model.manufacture.planning.Operation;
 import br.com.altamira.data.model.manufacture.planning.Order;
 import br.com.altamira.data.model.manufacture.planning.Order_;
@@ -33,7 +35,8 @@ import br.com.altamira.data.model.manufacture.planning.Process_;
 import br.com.altamira.data.model.manufacture.planning.Produce;
 import br.com.altamira.data.model.manufacture.planning.Produce_;
 import br.com.altamira.data.model.manufacture.process.Operation_;
-import javax.persistence.criteria.Fetch;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.SetJoin;
 
 /**
  *
@@ -326,7 +329,7 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
 
         criteriaQuery.select(cb.construct(Operation.class,
                 operation.get(Operation_.id),
-                cb.min(operation.get("description")),
+                cb.min(operation.get("name")),
                 produce.get(Produce_.startDate),
                 cb.sum(produce.get("quantity").get("value")),
                 cb.min(produce.get("quantity").get("unit"))));
@@ -400,6 +403,65 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
             throws ConstraintViolationException {
 
         return entityManager.createQuery(this.getOperationReportQuery(orderID, operationId))
+                .getResultList();
+    }
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    public CriteriaQuery<BOM> getComponentQuery(@NotNull MultivaluedMap<String, String> parameters) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+        // ALTAMIRA-160: Manufacture Planning - list ITEM's Component
+        // ------------------------------------------------------------------------------------
+        //SELECT DISTINCT 
+        //  MN_BOM_ITEM_CMP.ID, MN_BOM_ITEM_CMP.CODE, MN_BOM_ITEM_CMP.DESCRIPTION
+        //FROM 
+        //  MN_BOM 
+        //    INNER JOIN MN_BOM_ITEM ON MN_BOM.ID = MN_BOM_ITEM.BOM
+        //    INNER JOIN MN_BOM_ITEM_CMP ON MN_BOM_ITEM.ID = MN_BOM_ITEM_CMP.ITEM
+        //    INNER JOIN CM_MATERIAL ON MN_BOM_ITEM_CMP.MATERIAL = CM_MATERIAL.ID
+        //    INNER JOIN MN_PROCESS ON CM_MATERIAL.PROCESS = MN_PROCESS.ID
+        //    INNER JOIN MN_PROCESS_OPERATION ON MN_PROCESS_OPERATION.PROCESS = MN_PROCESS.ID
+        //    INNER JOIN MN_OPERATION ON MN_PROCESS_OPERATION.OPERATION = MN_OPERATION.ID
+        //WHERE
+        //  MN_PROCESS.ID = 10003 
+        //  AND MN_BOM.ID = 62492
+        //  AND MN_BOM_ITEM.ID = 62508;
+  
+        CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
+        Root<BOM> bom = criteriaQuery.from(BOM.class);
+        SetJoin<BOM, Item> item = bom.join(BOM_.item);
+        SetJoin<Item, Component> component = item.join(Item_.component);
+        Join<Component, Material> material = component.join(Component_.material);
+        Join<Material, Process> process = material.join(Material_.process);
+
+        bom.fetch(BOM_.item).fetch(Item_.component);
+        
+        criteriaQuery.select(bom);
+
+        criteriaQuery.where(cb.equal(process.get(Process_.id), parameters.get("id").get(0)));
+        
+        return criteriaQuery;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    public List<BOM> listComponent(
+            @NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+            @Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+            @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+            throws ConstraintViolationException {
+
+        return entityManager.createQuery(this.getComponentQuery(parameters))
+                .setFirstResult(startPage * pageSize)
+                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
     }
 }

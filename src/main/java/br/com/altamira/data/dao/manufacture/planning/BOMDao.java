@@ -94,7 +94,6 @@ public class BOMDao extends BaseDao<BOM> {
             entity.getItem().stream().forEach((item) -> {
                 item.getComponent().size();
                 item.getComponent().stream().forEach((component) -> {
-                    component.getMaterial().setComponent(null);
                     component.getProduce().size();
                 });
             });

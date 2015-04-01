@@ -33,6 +33,7 @@ import br.com.altamira.data.model.manufacture.planning.Process_;
 import br.com.altamira.data.model.manufacture.planning.Produce;
 import br.com.altamira.data.model.manufacture.planning.Produce_;
 import br.com.altamira.data.model.manufacture.process.Operation_;
+import javax.persistence.criteria.Fetch;
 
 /**
  *
@@ -181,11 +182,10 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
         Root<Component> component = criteriaQuery.from(Component.class);
         Root<br.com.altamira.data.model.common.Material> material = criteriaQuery.from(br.com.altamira.data.model.common.Material.class);
         Root<Process> process = criteriaQuery.from(Process.class);
+        
+        item.fetch(Item_.component);
 
-        criteriaQuery.select(cb.construct(Item.class,
-                item.get(Item_.id),
-                item.get(Item_.item),
-                item.get(Item_.description)));
+        criteriaQuery.select(item);
 
         criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
                 cb.equal(item.get(Item_.id), component.get(Component_.item)),

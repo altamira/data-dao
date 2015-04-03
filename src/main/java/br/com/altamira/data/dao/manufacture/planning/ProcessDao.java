@@ -13,6 +13,7 @@ import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -432,16 +433,31 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
   
         CriteriaQuery<BOM> criteriaQuery = cb.createQuery(BOM.class);
         Root<BOM> bom = criteriaQuery.from(BOM.class);
-        SetJoin<BOM, Item> item = bom.join(BOM_.item);
-        SetJoin<Item, Component> component = item.join(Item_.component);
-        Join<Component, Material> material = component.join(Component_.material);
-        Join<Material, Process> process = material.join(Material_.process);
+        SetJoin<BOM, Item> item = (SetJoin<BOM, Item>) bom.fetch(BOM_.item);
+        SetJoin<Item, Component> component = (SetJoin<Item, Component>) item.fetch(Item_.component);
+        
+	        Subquery<Long> subQuery = criteriaQuery.subquery(Long.class);
+	        Root<Material> material = subQuery.from(Material.class);
+	        Root<Process> process = subQuery.from(Process.class);
+	        Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = subQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
+	        Root<Operation> operation = subQuery.from(Operation.class);
+	        Root<Produce> produce = subQuery.from(Produce.class);
+	        Root<Order> order = subQuery.from(Order.class);
 
-        bom.fetch(BOM_.item).fetch(Item_.component);
+	        subQuery.select(component.get(Component_.id)).distinct(true);
+	        subQuery.where(cb.equal(component.get(Component_.material), material.get(Material_.id)),
+	                cb.equal(material.get(Material_.process), process.get(Process_.id)),
+	                cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
+	                cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
+	                cb.equal(component.get(Component_.id), produce.get(Produce_.component)),
+	                cb.equal(order.get(Order_.id), produce.get(Produce_.order)),
+	                cb.equal(process.get(Process_.id), parameters.get("id").get(0)));
         
         criteriaQuery.select(bom);
-
-        criteriaQuery.where(cb.equal(process.get(Process_.id), parameters.get("id").get(0)));
+        
+        criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
+                cb.equal(item.get(Item_.id), component.get(Component_.item)),
+                cb.equal(component.get(Component_.id),subQuery));
         
         return criteriaQuery;
     }

@@ -15,11 +15,18 @@ import br.com.altamira.data.model.manufacture.planning.Component;
 import br.com.altamira.data.model.manufacture.planning.Component_;
 import br.com.altamira.data.model.manufacture.planning.Item;
 import br.com.altamira.data.model.manufacture.planning.Item_;
+import br.com.altamira.data.model.manufacture.planning.Material;
+import br.com.altamira.data.model.manufacture.planning.Material_;
 import br.com.altamira.data.model.manufacture.planning.Order;
 import br.com.altamira.data.model.manufacture.planning.Order_;
+import br.com.altamira.data.model.manufacture.planning.Process;
+import br.com.altamira.data.model.manufacture.planning.Process_;
 import br.com.altamira.data.model.manufacture.planning.Produce;
 import br.com.altamira.data.model.manufacture.planning.Produce_;
+import br.com.altamira.data.model.manufacture.process.Operation_;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -134,5 +141,53 @@ public class OrderDao extends BaseDao<Order> {
     	{
     		return super.list(parameters, startPage, pageSize);
     	}
+    }
+    
+    //ALTAMIRA-175 : Manufacture Planning - create list order's operations API
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    public CriteriaQuery<br.com.altamira.data.model.manufacture.Operation> getOperationQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+    	CriteriaQuery<br.com.altamira.data.model.manufacture.Operation> criteriaQuery = cb.createQuery(br.com.altamira.data.model.manufacture.Operation.class);
+    	
+    	Root<Order> order = criteriaQuery.from(Order.class);
+    	ListJoin<Order, Produce> produce = order.join(Order_.produce);
+    	Join<Produce, Component> component = produce.join(Produce_.component);
+    	Join<Component, Material> material = component.join(Component_.material);
+    	Join<Material, Process> process = material.join(Material_.process);
+    	Join<Process, br.com.altamira.data.model.manufacture.process.Operation> processOperation = process.join(Process_.operation);
+    	Join<br.com.altamira.data.model.manufacture.process.Operation, br.com.altamira.data.model.manufacture.Operation> operation = processOperation.join(Operation_.operation);
+
+    	criteriaQuery.select(operation);
+
+    	criteriaQuery.where(cb.equal(order.get(Order_.id), parameters.get("id").get(0)));
+
+    	return criteriaQuery;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    public List<br.com.altamira.data.model.manufacture.Operation> listOperation(
+    		@NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+    		@Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+    		@Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+    				throws ConstraintViolationException {
+
+    	List<br.com.altamira.data.model.manufacture.Operation> operation = entityManager.createQuery(this.getOperationQuery(parameters))
+    			.setFirstResult(startPage * pageSize)
+    			.setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+    			.getResultList();
+
+    	return new ArrayList<br.com.altamira.data.model.manufacture.Operation>(new LinkedHashSet<br.com.altamira.data.model.manufacture.Operation>(operation));
     }
 }

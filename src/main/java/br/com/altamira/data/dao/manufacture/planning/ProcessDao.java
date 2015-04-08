@@ -480,4 +480,96 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
     }
+    
+    //ALTAMIRA-170 : Manufacture Planning - API for list/create/update/delete Produce
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    public CriteriaQuery<Produce> getProduceQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+    	CriteriaQuery<Produce> criteriaQuery = cb.createQuery(Produce.class);
+    	Root<BOM> bom = criteriaQuery.from(BOM.class);
+    	SetJoin<BOM, Item> item = bom.join(BOM_.item);
+    	SetJoin<Item, Component> component = item.join(Item_.component);
+    	Join<Component, Produce> produce = component.join(Component_.produce);
+    	Join<Component, Material> material = component.join(Component_.material);
+    	Join<Material, Process> process = material.join(Material_.process);
+    	Join<Process, br.com.altamira.data.model.manufacture.process.Operation> processOperation = process.join(Process_.operation);
+    	Join<br.com.altamira.data.model.manufacture.process.Operation, br.com.altamira.data.model.manufacture.Operation> operation = processOperation.join(Operation_.operation);
+
+    	criteriaQuery.select(produce).distinct(true);
+
+    	criteriaQuery.where(cb.equal(process.get(Process_.id), parameters.get("id").get(0)),
+    			cb.equal(bom.get(BOM_.id), parameters.get("id").get(1)),
+    			cb.equal(item.get(Item_.id), parameters.get("id").get(2)),
+    			cb.equal(component.get(Component_.id), parameters.get("id").get(3)));
+
+    	return criteriaQuery;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    public List<Produce> listProduce(
+    		@NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+    		@Min(value = 0, message = START_PAGE_VALIDATION) int startPage,
+    		@Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
+    				throws ConstraintViolationException {
+
+    	return entityManager.createQuery(this.getProduceQuery(parameters))
+    			.setFirstResult(startPage * pageSize)
+    			.setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+    			.getResultList();
+    }
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    public CriteriaQuery<Produce> getByProduceIdQuery(@NotNull MultivaluedMap<String, String> parameters) {
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+    	CriteriaQuery<Produce> criteriaQuery = cb.createQuery(Produce.class);
+    	Root<BOM> bom = criteriaQuery.from(BOM.class);
+    	SetJoin<BOM, Item> item = bom.join(BOM_.item);
+    	SetJoin<Item, Component> component = item.join(Item_.component);
+    	Join<Component, Produce> produce = component.join(Component_.produce);
+    	Join<Component, Material> material = component.join(Component_.material);
+    	Join<Material, Process> process = material.join(Material_.process);
+    	Join<Process, br.com.altamira.data.model.manufacture.process.Operation> processOperation = process.join(Process_.operation);
+    	Join<br.com.altamira.data.model.manufacture.process.Operation, br.com.altamira.data.model.manufacture.Operation> operation = processOperation.join(Operation_.operation);
+
+    	criteriaQuery.select(produce).distinct(true);
+
+    	criteriaQuery.where(cb.equal(process.get(Process_.id), parameters.get("id").get(0)),
+    			cb.equal(bom.get(BOM_.id), parameters.get("id").get(1)),
+    			cb.equal(item.get(Item_.id), parameters.get("id").get(2)),
+    			cb.equal(component.get(Component_.id), parameters.get("id").get(3)),
+    			cb.equal(produce.get(Produce_.id), parameters.get("id").get(4)));
+
+    	return criteriaQuery;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    public Produce getProduceById(
+    		@NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters)
+    				throws ConstraintViolationException {
+
+    	return entityManager.createQuery(this.getByProduceIdQuery(parameters)).getSingleResult();
+    }
 }

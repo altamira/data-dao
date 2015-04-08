@@ -48,6 +48,18 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
 
     /**
      *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(br.com.altamira.data.model.manufacture.planning.Process entity) {
+        // Lazy load of items
+        if (entity.getOperation() != null) {
+            entity.setOperation(null);
+        }
+    }
+    
+    /**
+     *
      * @param parameters
      * @return
      */
@@ -441,16 +453,16 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
 	        Root<Process> process = subQuery.from(Process.class);
 	        Root<br.com.altamira.data.model.manufacture.process.Operation> processOperation = subQuery.from(br.com.altamira.data.model.manufacture.process.Operation.class);
 	        Root<Operation> operation = subQuery.from(Operation.class);
-	        Root<Produce> produce = subQuery.from(Produce.class);
-	        Root<Order> order = subQuery.from(Order.class);
+	        //Root<Produce> produce = subQuery.from(Produce.class);
+	        //Root<Order> order = subQuery.from(Order.class);
 
 	        subQuery.select(component.get(Component_.id)).distinct(true);
 	        subQuery.where(cb.equal(component.get(Component_.material), material.get(Material_.id)),
 	                cb.equal(material.get(Material_.process), process.get(Process_.id)),
 	                cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.process), process.get(Process_.id)),
 	                cb.equal(processOperation.get(br.com.altamira.data.model.manufacture.process.Operation_.operation), operation.get(Operation_.id)),
-	                cb.equal(component.get(Component_.id), produce.get(Produce_.component)),
-	                cb.equal(order.get(Order_.id), produce.get(Produce_.order)),
+	                //cb.equal(component.get(Component_.id), produce.get(Produce_.component)),
+	                //cb.equal(order.get(Order_.id), produce.get(Produce_.order)),
 	                cb.equal(process.get(Process_.id), parameters.get("id").get(0)));
         
         criteriaQuery.select(bom);

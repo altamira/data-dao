@@ -19,13 +19,25 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @Stateless(name = "br.com.altamira.data.dao.manufacture.planning.ProduceDao")
 public class ProduceDao extends BaseDao<Produce> {
-	
-	@Override
-	public void resolveDependencies(Produce entity, MultivaluedMap<String, String> parameters)
-			throws IllegalArgumentException {
-		
-		entity.setOrder(entityManager.find(Order.class, entity.getOrder().getId()));
-		entity.setComponent(entityManager.find(Component.class, Long.parseLong(parameters.get("id").get(3))));
-	}
+
+    /**
+     *
+     * @param entity
+     */
+    @Override
+    public void lazyLoad(Produce entity) {
+        // Lazy load of items
+        if (entity.getOrder() != null) {
+            entity.getOrder().setProduce(null);
+        }
+    }
+    
+    @Override
+    public void resolveDependencies(Produce entity, MultivaluedMap<String, String> parameters)
+            throws IllegalArgumentException {
+
+        entity.setOrder(entityManager.find(Order.class, entity.getOrder().getId()));
+        entity.setComponent(entityManager.find(Component.class, Long.parseLong(parameters.get("id").get(3))));
+    }
 
 }

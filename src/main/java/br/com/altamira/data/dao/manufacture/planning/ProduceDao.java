@@ -5,12 +5,20 @@
  */
 package br.com.altamira.data.dao.manufacture.planning;
 
+import java.math.BigDecimal;
+
 import br.com.altamira.data.dao.BaseDao;
 import br.com.altamira.data.model.manufacture.planning.Component;
+import br.com.altamira.data.model.manufacture.planning.Component_;
 import br.com.altamira.data.model.manufacture.planning.Order;
 import br.com.altamira.data.model.manufacture.planning.Produce;
+import br.com.altamira.data.model.manufacture.planning.Produce_;
+import br.com.altamira.data.model.measurement.Measure_;
 
 import javax.ejb.Stateless;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -36,8 +44,30 @@ public class ProduceDao extends BaseDao<Produce> {
     public void resolveDependencies(Produce entity, MultivaluedMap<String, String> parameters)
             throws IllegalArgumentException {
 
-        entity.setOrder(entityManager.find(Order.class, entity.getOrder().getId()));
+        //entity.setOrder(entityManager.find(Order.class, entity.getOrder().getId()));
+    	entity.setOrder(entityManager.find(Order.class, Long.parseLong(parameters.get("id").get(0))));
         entity.setComponent(entityManager.find(Component.class, Long.parseLong(parameters.get("id").get(3))));
+    }
+    
+    //ALTAMIRA-180: Manufacture Planning - calculate produced and remaining fields
+    @Override
+    public void updateDependencies(Produce entity, MultivaluedMap<String, String> parameters)
+    		throws IllegalArgumentException {
+    	
+    	Component component = entity.getComponent();
+    	
+    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    	CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
+    	Root<Produce> root = criteria.from(Produce.class);
+    	criteria.select(cb.sum(root.get(Produce_.quantity).get(Measure_.value)));
+    	criteria.where(cb.equal(root.get(Produce_.component).get(Component_.id), component.getId()));
+    	
+    	BigDecimal totalProduceQty = entityManager.createQuery(criteria).getSingleResult();
+    	component.getProduced().setValue(totalProduceQty);
+    	component.getRemaining().setValue(component.getQuantity().getValue().subtract(totalProduceQty));
+    	
+    	entityManager.persist(entity);
+    	entityManager.flush();
     }
 
 }

@@ -9,6 +9,7 @@ import javax.ejb.Stateless;
 import javax.ws.rs.core.MultivaluedMap;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.security.User;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.History;
 
@@ -34,5 +35,16 @@ public class HistoryDao extends BaseDao<History> {
 
 		entityManager.persist(entity);
 		entityManager.flush();
+	}
+	
+	public User getUserById(Long userId){
+		
+		User user = entityManager.find(User.class, userId);
+		
+		/*// Lazy load of tokens
+		user.getAccessTokens().size();
+	    user.getProfiles().size();*/
+	    
+	    return user;
 	}
 }

@@ -125,7 +125,7 @@ public class ProcessDao extends BaseDao<Process> {
         criteriaQuery.select(cb.construct(Process.class,
                 entity.get(Process_.id),
                 entity.get(Process_.code),
-                entity.get(Process_.description)));
+                entity.get(Process_.name)));
 
         if (parameters.get("search") != null
                 && !parameters.get("search").isEmpty()) {
@@ -134,7 +134,7 @@ public class ProcessDao extends BaseDao<Process> {
 
             criteriaQuery.where(cb.or(
                     cb.like(cb.lower(entity.get(Process_.code)), searchCriteria),
-                    cb.like(cb.lower(entity.get(Process_.description)), searchCriteria)));
+                    cb.like(cb.lower(entity.get(Process_.name)), searchCriteria)));
         } else {
             // TODO: list pending processes        	
         }

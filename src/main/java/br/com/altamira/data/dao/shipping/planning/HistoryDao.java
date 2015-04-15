@@ -6,9 +6,14 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import javax.ejb.Stateless;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.ws.rs.core.MultivaluedMap;
 
 import br.com.altamira.data.dao.BaseDao;
+import br.com.altamira.data.model.security.AccessToken;
+import br.com.altamira.data.model.security.AccessToken_;
 import br.com.altamira.data.model.security.User;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.History;
@@ -37,14 +42,15 @@ public class HistoryDao extends BaseDao<History> {
 		entityManager.flush();
 	}
 	
-	public User getUserById(Long userId){
+	public User getUserByToken(String token){
 		
-		User user = entityManager.find(User.class, userId);
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<User> criteriaQuery = cb.createQuery(User.class);
 		
-		/*// Lazy load of tokens
-		user.getAccessTokens().size();
-	    user.getProfiles().size();*/
-	    
-	    return user;
+		Root<AccessToken> accessToken = criteriaQuery.from(AccessToken.class);
+		criteriaQuery.select(accessToken.get(AccessToken_.user));
+		criteriaQuery.where(cb.equal(accessToken.get(AccessToken_.accessToken), token));
+		
+	    return entityManager.createQuery(criteriaQuery).getSingleResult();
 	}
 }

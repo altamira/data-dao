@@ -37,6 +37,8 @@ public class BOMDao extends BaseDao<BOM> {
 
     @Inject
     private br.com.altamira.data.dao.manufacture.bom.DeliveryDao deliveryDao;
+    
+    @Inject br.com.altamira.data.dao.manufacture.process.ProcessDao processDao;
 
     /**
      *
@@ -124,6 +126,8 @@ public class BOMDao extends BaseDao<BOM> {
                         }
                     }
 
+                    material.setProcess(processDao.find(10000l));
+                    
                     entityManager.persist(material);
                     entityManager.flush();
                 }

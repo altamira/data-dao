@@ -338,7 +338,9 @@ public class OperationDao extends BaseDao<Operation> {
                 cb.min(operation.get("name")),
                 produce.get(Produce_.startDate),
                 cb.sum(produce.get("quantity").get("value")),
-                cb.min(produce.get("quantity").get("unit"))));
+                cb.min(produce.get("quantity").get("unit")),
+                cb.sum(produce.get("weight").get("value")),
+                cb.min(produce.get("weight").get("unit"))));
 
         criteriaQuery.where(cb.equal(bom.get(BOM_.id), item.get(Item_.bom)),
                 cb.equal(item.get(Item_.id), component.get(Component_.item)),

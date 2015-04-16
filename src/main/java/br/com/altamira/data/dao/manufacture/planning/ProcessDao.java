@@ -299,10 +299,17 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
             @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException {
 
-        return entityManager.createQuery(this.getBOMItemComponentQuery(parameters))
-                .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
-                .getResultList();
+    	List<Component> list = entityManager.createQuery(this.getBOMItemComponentQuery(parameters))
+    			.setFirstResult(startPage * pageSize)
+    			.setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+    			.getResultList();
+
+    	// lazyload materials
+    	list.stream().forEach((component) -> {
+    		component.getMaterial().getId();
+    	});
+
+    	return list;
     }
 
     //ALTAMIRA-161 : Manufacture Planning - Operation summary
@@ -487,10 +494,21 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
             @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException {
 
-        return entityManager.createQuery(this.getComponentQuery(parameters))
-                .setFirstResult(startPage * pageSize)
-                .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
-                .getResultList();
+    	List<BOM> list = entityManager.createQuery(this.getComponentQuery(parameters))
+    			.setFirstResult(startPage * pageSize)
+    			.setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
+    			.getResultList();
+
+    	// lazyload materials
+    	list.stream().forEach((bom) -> {
+    		bom.getItem().stream().forEach((item) -> {
+    			item.getComponent().stream().forEach((component) -> {
+    				component.getMaterial().getId();
+    			});
+    		});
+    	});
+
+    	return list;
     }
     
     //ALTAMIRA-170 : Manufacture Planning - API for list/create/update/delete Produce

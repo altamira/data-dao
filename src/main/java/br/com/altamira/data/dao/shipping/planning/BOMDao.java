@@ -134,6 +134,9 @@ public class BOMDao extends BaseDao<BOM> {
                 });
             });
         }
+        if (entity.getHistory() != null) {
+            entity.getHistory().size();
+        }
     }
 
     @Override

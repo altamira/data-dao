@@ -6,17 +6,13 @@
 package br.com.altamira.data.dao.shipping.planning;
 
 import javax.ejb.Stateless;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import javax.ws.rs.core.MultivaluedMap;
 
 import br.com.altamira.data.dao.BaseDao;
-import br.com.altamira.data.model.security.AccessToken;
-import br.com.altamira.data.model.security.AccessToken_;
-import br.com.altamira.data.model.security.User;
 import br.com.altamira.data.model.shipping.planning.BOM;
 import br.com.altamira.data.model.shipping.planning.History;
+import br.com.altamira.data.model.shipping.planning.User;
+import javax.inject.Inject;
 
 /**
  *
@@ -25,32 +21,28 @@ import br.com.altamira.data.model.shipping.planning.History;
 @Stateless(name = "br.com.altamira.data.dao.shipping.HistoryDao")
 public class HistoryDao extends BaseDao<History> {
 
-	@Override
-	public void resolveDependencies(History entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+    @Inject
+    private UserDao userDao;
 
-		entity.setBOM(entityManager.find(BOM.class, entity.getBOM().getId()));
-	}
+    @Override
+    public void resolveDependencies(History entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
 
-	@Override
-	public void updateDependencies(History entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
+        String token = parameters.get("token").get(0);
+        User user = userDao.getUserByToken(token);
+        entity.setCreatedBy(user);
+        
+        entity.setBOM(entityManager.find(BOM.class, entity.getBOM().getId()));
+    }
 
-		// ALTAMIRA-138: update BOM.Status with the same value as History.Status on create/update of History
-		BOM bom = entity.getBOM();
-		bom.setStatus(entity.getStatus());
+    @Override
+    public void updateDependencies(History entity, MultivaluedMap<String, String> parameters) throws IllegalArgumentException {
 
-		entityManager.persist(entity);
-		entityManager.flush();
-	}
-	
-	public User getUserByToken(String token){
-		
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<User> criteriaQuery = cb.createQuery(User.class);
-		
-		Root<AccessToken> accessToken = criteriaQuery.from(AccessToken.class);
-		criteriaQuery.select(accessToken.get(AccessToken_.user));
-		criteriaQuery.where(cb.equal(accessToken.get(AccessToken_.accessToken), token));
-		
-	    return entityManager.createQuery(criteriaQuery).getSingleResult();
-	}
+        // ALTAMIRA-138: update BOM.Status with the same value as History.Status on create/update of History
+        BOM bom = entity.getBOM();
+        bom.setStatus(entity.getStatus());
+
+        entityManager.persist(entity);
+        entityManager.flush();
+    }
+
 }

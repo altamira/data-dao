@@ -15,10 +15,13 @@ import br.com.altamira.data.model.shipping.execution.Delivered_;
 import br.com.altamira.data.model.shipping.execution.Delivery;
 import br.com.altamira.data.model.shipping.execution.PackingList;
 import br.com.altamira.data.model.shipping.execution.PackingList_;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -44,7 +47,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
         if (entity.getComponent().getMaterial() != null) {
             entity.getComponent().getMaterial().setComponent(null);
         }
-
+        
     }
     
     /**
@@ -90,7 +93,7 @@ public class DeliveredDao extends BaseDao<Delivered> {
         
         /* ALTAMIRA-116 */
         // Update Delivered's weight
-        BigDecimal componentUnitWeight = entity.getComponent().getWeight().getValue().divide(entity.getComponent().getQuantity().getValue());
+        BigDecimal componentUnitWeight = entity.getComponent().getWeight().getValue().divide(entity.getComponent().getQuantity().getValue(), 3, RoundingMode.HALF_UP);
         BigDecimal deliveredWeight = componentUnitWeight.multiply(entity.getQuantity().getValue());
         entity.getWeight().setValue(deliveredWeight);
         

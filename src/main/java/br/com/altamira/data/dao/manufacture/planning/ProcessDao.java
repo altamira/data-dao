@@ -228,12 +228,21 @@ public class ProcessDao extends BaseDao<br.com.altamira.data.model.manufacture.p
             @Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize)
             throws ConstraintViolationException {
 
-        List<Item> item = entityManager.createQuery(this.getBOMItemQuery(parameters))
+        List<Item> itemList = entityManager.createQuery(this.getBOMItemQuery(parameters))
                 .setFirstResult(startPage * pageSize)
                 .setMaxResults(pageSize == 0 ? Integer.MAX_VALUE : pageSize)
                 .getResultList();
+        
+        ArrayList<Item> list = new ArrayList<Item>(new LinkedHashSet<Item>(itemList));
+        
+        // lazyload materials
+    	list.stream().forEach((item) -> {
+    		item.getComponent().forEach((component) -> {
+    			component.getMaterial().getId();
+    		});
+    	});
 
-        return new ArrayList<Item>(new LinkedHashSet<Item>(item));
+        return list;
     }
 
     //ALTAMIRA-160 : Manufacture Planning - list ITEM's Component

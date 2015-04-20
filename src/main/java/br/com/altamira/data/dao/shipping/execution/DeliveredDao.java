@@ -19,6 +19,7 @@ import br.com.altamira.data.model.shipping.execution.PackingList_;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -27,6 +28,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolationException;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -68,6 +71,22 @@ public class DeliveredDao extends BaseDao<Delivered> {
                 Long.parseLong(parameters.get("parentId").get(0))));
 
         return criteriaQuery;
+    }
+    
+    @Override
+    public List<Delivered> list(@NotNull(message = PARAMETER_VALIDATION) MultivaluedMap<String, String> parameters,
+    							@Min(value = 0, message = START_PAGE_VALIDATION) int startPage, 
+    							@Min(value = 0, message = PAGE_SIZE_VALIDATION) int pageSize) 
+    							throws ConstraintViolationException {
+    	
+    	List<Delivered> list = super.list(parameters, startPage, pageSize);
+    	
+    	// lazyload components
+    	list.stream().forEach((delivered) -> {
+    		lazyLoad(delivered);
+    	});
+    	
+    	return list;
     }
 
     /**

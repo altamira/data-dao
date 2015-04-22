@@ -14,6 +14,7 @@ import br.com.altamira.data.model.manufacture.planning.Order;
 import br.com.altamira.data.model.manufacture.planning.Produce;
 import br.com.altamira.data.model.manufacture.planning.Produce_;
 import br.com.altamira.data.model.measurement.Measure_;
+import br.com.altamira.data.model.measurement.Unit;
 
 import javax.ejb.Stateless;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -40,47 +41,55 @@ public class ProduceDao extends BaseDao<Produce> {
             entity.getOrder().setProduce(null);
         }
     }
-    
+
     @Override
     public void resolveDependencies(Produce entity, MultivaluedMap<String, String> parameters)
             throws IllegalArgumentException {
 
         //entity.setOrder(entityManager.find(Order.class, entity.getOrder().getId()));
-    	entity.setOrder(entityManager.find(Order.class, Long.parseLong(parameters.get("id").get(0))));
+        entity.setOrder(entityManager.find(Order.class, Long.parseLong(parameters.get("id").get(0))));
         entity.setComponent(entityManager.find(Component.class, Long.parseLong(parameters.get("id").get(3))));
+        // resolve measurements
+        entity.getComponent().getProduced().setUnit(entityManager.find(Unit.class, entity.getComponent().getProduced().getUnit().getId()));
+        entity.getComponent().getRemaining().setUnit(entityManager.find(Unit.class, entity.getComponent().getRemaining().getUnit().getId()));
+        entity.getComponent().getQuantity().setUnit(entityManager.find(Unit.class, entity.getComponent().getQuantity().getUnit().getId()));
+        entity.getComponent().getWeight().setUnit(entityManager.find(Unit.class, entity.getComponent().getWeight().getUnit().getId()));
     }
-    
+
     //ALTAMIRA-180: Manufacture Planning - calculate produced and remaining fields
     @Override
     public void updateDependencies(Produce entity, MultivaluedMap<String, String> parameters)
-    		throws IllegalArgumentException {
-    	
-    	calculateProducedAndRemaining(entity.getComponent());
+            throws IllegalArgumentException {
+
+        calculateProducedAndRemaining(entity.getComponent());
     }
-    
+
     @Override
     public void remove(long id) throws ConstraintViolationException, IllegalArgumentException {
 
-    	Component component = entityManager.find(Produce.class, id).getComponent();
-    	super.remove(id);
+        Component component = entityManager.find(Produce.class, id).getComponent();
+        super.remove(id);
 
-    	calculateProducedAndRemaining(component);
+        calculateProducedAndRemaining(component);
     }
-    
+
     private void calculateProducedAndRemaining(Component entity) {
-    	
-    	CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    	CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
-    	Root<Produce> root = criteria.from(Produce.class);
-    	criteria.select(cb.sum(root.get(Produce_.quantity).get(Measure_.value)));
-    	criteria.where(cb.equal(root.get(Produce_.component).get(Component_.id), entity.getId()));
-    	
-    	BigDecimal totalProduceQty = entityManager.createQuery(criteria).getSingleResult();
-    	entity.getProduced().setValue(totalProduceQty);
-    	entity.getRemaining().setValue(entity.getQuantity().getValue().subtract(totalProduceQty));
-    	
-    	entityManager.persist(entity);
-    	entityManager.flush();
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BigDecimal> criteria = cb.createQuery(BigDecimal.class);
+        Root<Produce> root = criteria.from(Produce.class);
+        criteria.select(cb.sum(root.get(Produce_.quantity).get(Measure_.value)));
+        criteria.where(cb.equal(root.get(Produce_.component).get(Component_.id), entity.getId()));
+
+        BigDecimal totalProduceQty = entityManager.createQuery(criteria).getSingleResult();
+
+        if (totalProduceQty != null) {
+            entity.getProduced().setValue(totalProduceQty);
+            entity.getRemaining().setValue(entity.getQuantity().getValue().subtract(totalProduceQty));
+
+            entityManager.persist(entity);
+            entityManager.flush();
+        }
     }
 
 }

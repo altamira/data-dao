@@ -76,7 +76,8 @@ public class OperationDao extends BaseDao<Operation> {
     @Override
     public void resolveDependencies(Operation entity, MultivaluedMap<String, String> parameters) {
         if (entity.getSketch() != null
-                && entity.getSketch().getImage().length > 0) {
+        		 && entity.getSketch().getImage() != null
+        		 && entity.getSketch().getImage().length > 0) {
             entity.getSketch().setOperation(entity);
         } else {
             entity.setSketch(null);

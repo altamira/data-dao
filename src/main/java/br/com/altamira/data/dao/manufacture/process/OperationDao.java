@@ -39,6 +39,9 @@ public class OperationDao extends BaseDao<Operation> {
     public void lazyLoad(Operation entity) {
         entity.getSketch();
 
+        // ALTAMIRA-210: Manufacture Process - Provide full details of operation
+        entity.getOperation().getId();
+
         entity.getUse().size();
         entity.getConsume().size();
         entity.getProduce().size();
